@@ -1,0 +1,1930 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.cursor/rules/00-project.mdc
+.cursor/rules/10-python.mdc
+.env.example
+.gitattributes
+.gitignore
+.pre-commit-config.yaml
+CLAUDE.md
+docker-compose.yml
+Makefile
+modules/01_python_model/README.md
+modules/01_python_model/tests/test_module_01_stub.py
+modules/02_dsa/README.md
+modules/02_dsa/tests/test_module_02_stub.py
+modules/03_sql_relational/load_to_postgres.py
+modules/03_sql_relational/README.md
+modules/03_sql_relational/sql/01_views.sql
+modules/03_sql_relational/sql/02_recursive_cte.sql
+modules/03_sql_relational/sql/03_index_demo.sql
+modules/03_sql_relational/tests/test_sql_slice.py
+modules/04_spark_internals/join_aggregate_job.py
+modules/04_spark_internals/oom_exercise.py
+modules/04_spark_internals/README.md
+modules/04_spark_internals/tests/test_spark_slice.py
+modules/05_warehousing_bi/README.md
+modules/05_warehousing_bi/tests/test_module_05_stub.py
+modules/06_streaming_kafka/README.md
+modules/06_streaming_kafka/tests/test_module_06_stub.py
+modules/07_oop_design_patterns/README.md
+modules/07_oop_design_patterns/tests/test_module_07_stub.py
+modules/08_ai_assisted_dev/README.md
+modules/09_capstone_governance/README.md
+modules/09_capstone_governance/tests/test_module_09_stub.py
+notebooks/.gitkeep
+pyproject.toml
+README.md
+src/def_/__init__.py
+src/def_/common/__init__.py
+src/def_/common/io.py
+src/def_/common/logging.py
+src/def_/common/spark.py
+src/def_/datagen/__init__.py
+src/def_/datagen/cli.py
+src/def_/datagen/schema.py
+src/def_/py.typed
+tests/conftest.py
+tests/test_integration.py
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".cursor/rules/00-project.mdc">
+---
+description: Data Engineering Foundations project conventions
+alwaysApply: true
+---
+
+# Project rules
+
+- Repo teaches **systems internals** beneath governance/medallion skills — driver/executor, SQL relational model, indexing, Catalyst plans.
+- **Spark:** submittable jobs on the local standalone Docker cluster (`make spark-submit`); not notebook-first. Never use `local[*]` for graded Module 04 work.
+- **Tests:** prove-it acceptance tests per exercise; `make check` must pass before claiming done.
+- **`references/`** is gitignored local corpus — paraphrase only; cite *Book — Chapter N*; no long verbatim paste into committed files.
+- **Commands:** WSL at repo root — `make setup`, `make up`, `make seed`, `make load-sql`, `make check`. See `CLAUDE.md`.
+- **Package:** import `def_` from `src/def_/`; shared Spark/IO in `def_.common`.
+- **Scope:** first pass built modules 03–04 + datagen; other modules are README + stub tests only unless asked to expand.
+</file>
+
+<file path=".cursor/rules/10-python.mdc">
+---
+description: Python typing, lint, and test conventions
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python conventions
+
+- Python 3.12; manage deps with **uv**.
+- **mypy strict** on `src/def_/` — full type annotations on new code in `src/`.
+- **ruff** for lint + format; run `make lint` before finishing.
+- Prefer small scripts with `if __name__ == "__main__"` over notebooks for graded work.
+- Tests live beside modules (`modules/NN_*/tests/`) and in `tests/`; use pytest markers `postgres`, `spark`, `integration`.
+- Use `def_.common.spark.build_spark_session(..., cluster=True)` for Spark jobs.
+- Module loaders/jobs may live under `modules/` without strict mypy if not in `src/def_/`.
+</file>
+
+<file path=".env.example">
+# Copy to .env and adjust for local use (WSL paths recommended).
+
+DATA_DIR=./data
+
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=def_learning
+POSTGRES_USER=def_user
+POSTGRES_PASSWORD=def_pass
+
+SPARK_MASTER_URL=spark://localhost:7077
+SPARK_MASTER_WEB_UI=http://localhost:8080
+
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+</file>
+
+<file path=".pre-commit-config.yaml">
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies: []
+        args: [--config-file=pyproject.toml]
+        files: ^src/def_/
+</file>
+
+<file path="CLAUDE.md">
+# Data Engineering Foundations
+
+Hands-on repo closing the gap between governance/medallion fluency and **systems internals** (Spark cluster model, SQL foundations, tuning). Graded artifacts are **runnable jobs + passing tests**, not notebooks.
+
+## Commands (run from WSL at repo root)
+
+| Command | Purpose |
+|---------|---------|
+| `make setup` | `uv sync` + pre-commit hooks |
+| `make up` / `make down` | Docker: Spark (1 master, 2 workers), Postgres 16, Kafka KRaft |
+| `make seed` | Generate star-schema Parquet (~0.01 GB) |
+| `make seed-large` | ~1 GB for shuffle/OOM labs |
+| `make load-sql` | Load Parquet into Postgres + apply SQL |
+| `make spark-submit JOB=path/to/job.py` | Submit to **standalone cluster** (not `local[*]`) |
+| `make oom-lab` | Module 04 OOM exercise (expect failure) |
+| `make sql` | psql shell |
+| `make lint` / `make typecheck` / `make test` | Quality gates |
+| `make check` | lint + typecheck + test |
+
+## Stack
+
+- Python 3.12, **uv**, package `def_` under `src/def_/`
+- **ruff**, **mypy** (strict on `src/def_/`), **pytest**
+- Local Docker only — no cloud APIs
+- **duckdb** for future warehousing module; **PySpark** on Bitnami Spark 3.5 cluster
+
+## Layout
+
+- `src/def_/common/` — Spark session builder, Postgres DSN, paths (cluster-first)
+- `src/def_/datagen/` — Kimball-style retail star schema, `--scale-gb`
+- `modules/NN_*/` — learning units; exercises + tests in-module
+- `references/` — **gitignored** local textbook corpus; never commit
+- `data/` — **gitignored** generated Parquet and explain artifacts
+
+## Principles
+
+1. **Real cluster over notebooks** — Spark jobs via `spark-submit` against `spark://localhost:7077`; inspect UI :8080 (cluster) and :4040 (app).
+2. **Prove it** — Every exercise has pytest acceptance criteria; stubs use `skip`.
+3. **Typed `src/`** — Fully annotated; `make typecheck` must pass before done.
+4. **Copyright** — Paraphrase concepts in READMEs; cite as *Book — Chapter N*; never paste long verbatim text from `references/`.
+
+## Spark session
+
+Use `def_.common.spark.build_spark_session(name, cluster=True)` for graded jobs. Do not default to `local[*]` except isolated unit tests.
+
+## Environment
+
+Copy `.env.example` → `.env`. Defaults match `docker-compose.yml` (`def_user` / `def_learning`).
+
+## Module status (first pass)
+
+- **Built:** 03 SQL, 04 Spark, datagen, infra, agent files
+- **Stub:** 01, 02, 05, 06, 07, 09
+
+## UIs
+
+- Spark master: http://localhost:8080
+- Spark application: http://localhost:4040 (while a job runs)
+</file>
+
+<file path="docker-compose.yml">
+services:
+  postgres:
+    image: postgres:16
+    container_name: def-postgres
+    environment:
+      POSTGRES_DB: def_learning
+      POSTGRES_USER: def_user
+      POSTGRES_PASSWORD: def_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data:/data:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U def_user -d def_learning"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # bitnamilegacy/spark — unmaintained legacy copy of the old bitnami/spark image
+  # (Bitnami moved versioned tags to bitnamilegacy in 2025). Migrating to the
+  # official apache/spark image is a separate, optional hardening step.
+  spark-master:
+    image: bitnamilegacy/spark:3.5
+    container_name: def-spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+      - "4040:4040"
+    volumes:
+      - .:/workspace
+      - ./data:/data:ro
+    working_dir: /workspace
+
+  spark-worker-1:
+    image: bitnamilegacy/spark:3.5
+    container_name: def-spark-worker-1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+    depends_on:
+      - spark-master
+    volumes:
+      - .:/workspace
+      - ./data:/data:ro
+
+  spark-worker-2:
+    image: bitnamilegacy/spark:3.5
+    container_name: def-spark-worker-2
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
+    depends_on:
+      - spark-master
+    volumes:
+      - .:/workspace
+      - ./data:/data:ro
+
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: def-kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    ports:
+      - "9092:9092"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+</file>
+
+<file path="Makefile">
+# Data Engineering Foundations — run from WSL at repo root.
+.PHONY: setup up down lint typecheck test seed spark-submit sql check load-sql oom-lab
+
+UV := uv
+COMPOSE := docker compose
+PYTHONPATH := src:.
+
+export PYTHONPATH
+
+setup:
+	$(UV) sync --all-groups
+	$(UV) run pre-commit install
+
+up:
+	$(COMPOSE) up -d
+	@echo "Spark master UI: http://localhost:8080"
+	@echo "Spark app UI (when job runs): http://localhost:4040"
+
+down:
+	$(COMPOSE) down
+
+lint:
+	$(UV) run ruff check src modules tests
+	$(UV) run ruff format --check src modules tests
+
+typecheck:
+	$(UV) run mypy
+
+test:
+	$(UV) run pytest -m "not spark" --ignore=modules/04_spark_internals/tests
+
+test-all:
+	$(UV) run pytest
+
+seed:
+	$(UV) run python -m def_.datagen.cli --scale-gb 0.01
+
+seed-large:
+	$(UV) run python -m def_.datagen.cli --scale-gb 1.0
+
+load-sql:
+	$(UV) run python modules/03_sql_relational/load_to_postgres.py
+
+sql:
+	PGPASSWORD=$${POSTGRES_PASSWORD:-def_pass} psql -h $${POSTGRES_HOST:-localhost} -p $${POSTGRES_PORT:-5432} -U $${POSTGRES_USER:-def_user} -d $${POSTGRES_DB:-def_learning}
+
+spark-submit:
+	@test -n "$(JOB)" || (echo "Usage: make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py" && exit 1)
+	$(COMPOSE) exec -T -e PYTHONPATH=/workspace/src spark-master spark-submit \
+		--master spark://spark-master:7077 \
+		--deploy-mode client \
+		--conf spark.driver.host=spark-master \
+		--conf spark.driver.bindAddress=0.0.0.0 \
+		/workspace/$(JOB)
+
+oom-lab:
+	@echo "WARNING: This job is designed to fail with executor OOM. Run only when cluster is up."
+	$(MAKE) spark-submit JOB=modules/04_spark_internals/oom_exercise.py
+
+check: lint typecheck test
+</file>
+
+<file path="modules/01_python_model/README.md">
+# Module 01 — The Python Language Model & Object Orientation
+
+## Interview gap this closes
+
+> Could not cleanly define mutability/immutability; could not name mutable types and methods; unsure about array types; did not know dunder methods; hedged on OOP vs procedural vs scripting. Self-rated 10/10 with weak fundamentals.
+
+## Reference reading
+
+- *Fluent Python* (Ramalho) — Chapters 1–6, 11–12 (data model, sequences, interfaces)
+
+## Prove-it exercises (stub)
+
+1. **Mutability drill** — Acceptance: pytest proves list/dict/set mutations vs str/tuple immutability errors.
+2. **Dunder methods** — Acceptance: custom class implements `__repr__`, `__eq__`, `__hash__` with tests.
+3. **Data model API** — Acceptance: sequence-like class passes len/iter/getitem contract tests.
+</file>
+
+<file path="modules/01_python_model/tests/test_module_01_stub.py">
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Module 01 stub — implement in a later pass")
+
+
+def test_mutability() -> None:
+    assert True
+
+
+def test_dunder_methods() -> None:
+    assert True
+
+
+def test_data_model_api() -> None:
+    assert True
+</file>
+
+<file path="modules/02_dsa/README.md">
+# Module 02 — Data Structures, Algorithms & Problem Decomposition
+
+## Interview gap this closes
+
+> Struggled to decompose the star-pyramid pattern; confused rows vs characters; needed guidance for loop invariants and complexity reasoning.
+
+## Reference reading
+
+- *Introduction to Algorithms* (CLRS) — Chapters 2–4 (invariants, recurrences)
+- *The Algorithm Design Manual* (Skiena) — Chapter 2 (analysis)
+
+## Prove-it exercises (stub)
+
+1. **Loop invariant** — Acceptance: pytest verifies closed-form row count for pyramid pattern.
+2. **Complexity** — Acceptance: empirical timing test shows O(n) vs O(n²) implementations diverge as documented.
+</file>
+
+<file path="modules/02_dsa/tests/test_module_02_stub.py">
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Module 02 stub")
+
+
+def test_pyramid_invariant() -> None:
+    assert True
+
+
+def test_complexity_empirical() -> None:
+    assert True
+</file>
+
+<file path="modules/03_sql_relational/load_to_postgres.py">
+"""Load generated Parquet star schema into Postgres."""
+
+from __future__ import annotations
+
+import csv
+import io
+import sys
+from pathlib import Path
+
+import psycopg
+import pyarrow.parquet as pq
+
+from def_.common.io import get_postgres_dsn, parquet_paths
+from def_.common.logging import get_logger
+
+logger = get_logger(__name__)
+SCHEMA = "retail"
+
+
+def _pg_type(arrow_type: str) -> str:
+    if "date" in arrow_type:
+        return "DATE"
+    if "int" in arrow_type:
+        return "BIGINT"
+    if "float" in arrow_type or "double" in arrow_type:
+        return "DOUBLE PRECISION"
+    return "TEXT"
+
+
+def _load_table(conn: psycopg.Connection, table: str, path: Path) -> None:
+    files = list(path.glob("**/*.parquet"))
+    if not files:
+        msg = f"No parquet files in {path}; run make seed first"
+        raise FileNotFoundError(msg)
+    arrow_table = pq.read_table(files[0])
+    cols = arrow_table.column_names
+    col_defs = ", ".join(f"{c} {_pg_type(str(arrow_table.schema.field(c).type))}" for c in cols)
+    with conn.cursor() as cur:
+        cur.execute(f"DROP TABLE IF EXISTS {SCHEMA}.{table} CASCADE")
+        cur.execute(f"CREATE TABLE {SCHEMA}.{table} ({col_defs})")
+    conn.commit()
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(cols)
+    for i in range(arrow_table.num_rows):
+        row = [arrow_table.column(c)[i].as_py() for c in cols]
+        writer.writerow(row)
+    buf.seek(0)
+
+    col_list = ", ".join(cols)
+    with (
+        conn.cursor() as cur,
+        cur.copy(
+            f"COPY {SCHEMA}.{table} ({col_list}) FROM STDIN WITH (FORMAT csv, HEADER true)"
+        ) as copy,
+    ):
+        copy.write(buf.read())
+    conn.commit()
+    logger.info("Loaded %s (%d rows)", table, arrow_table.num_rows)
+
+
+def _run_sql_file(conn: psycopg.Connection, sql_path: Path) -> None:
+    sql = sql_path.read_text(encoding="utf-8")
+    with conn.cursor() as cur:
+        cur.execute(sql)
+    conn.commit()
+    logger.info("Executed %s", sql_path.name)
+
+
+def main() -> None:
+    paths = parquet_paths()
+    dsn = get_postgres_dsn()
+    sql_dir = Path(__file__).parent / "sql"
+
+    with psycopg.connect(dsn, autocommit=False) as conn:
+        with conn.cursor() as cur:
+            cur.execute(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA}")
+        conn.commit()
+
+        for name, p in paths.items():
+            _load_table(conn, name, p)
+
+        for sql_file in sorted(sql_dir.glob("*.sql")):
+            _run_sql_file(conn, sql_file)
+
+    logger.info("Postgres load complete")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        logger.exception("Load failed")
+        sys.exit(1)
+</file>
+
+<file path="modules/03_sql_relational/README.md">
+# Module 03 — Relational Databases, SQL & Query Optimization
+
+## Interview gap this closes
+
+> Did not know what a VIEW is; did not know CTEs / the WITH clause; limited temp-table experience. Claims query-tuning experience (Postgres/MySQL) without fundamentals.
+
+## Reference reading
+
+- *Database System Concepts* (Silberschatz) — Chapters 3–5 (relational model, SQL, views)
+- *SQL Performance Explained* (Winand) — Chapters 1–2 (indexing, filtering)
+
+## Prove-it exercises
+
+1. **VIEW over star join** — Acceptance: `retail.v_sales_by_region` returns one row per distinct `region` in `dim_store`, with non-null `total_sales`.
+2. **Recursive CTE** — Acceptance: `retail.v_category_tree` row count equals `product_hierarchy` rows; tree reaches level-3 nodes.
+3. **Index tuning** — Acceptance: `EXPLAIN ANALYZE` on `customer_key = 42` shows an Index Scan after creating `idx_fact_customer_key`; plan artifacts saved under `data/sql_plans/`.
+
+## Run this slice
+
+```bash
+make seed
+make up
+make load-sql
+uv run pytest modules/03_sql_relational/tests -m postgres
+```
+</file>
+
+<file path="modules/03_sql_relational/sql/01_views.sql">
+-- Silberschatz — views: virtual table over a query (Ch. 4 conceptually).
+DROP VIEW IF EXISTS retail.v_sales_by_region;
+CREATE VIEW retail.v_sales_by_region AS
+SELECT
+    s.region,
+    SUM(f.sales_amount) AS total_sales,
+    COUNT(*) AS line_count
+FROM retail.fact_sales AS f
+JOIN retail.dim_store AS s ON f.store_key = s.store_key
+GROUP BY s.region;
+</file>
+
+<file path="modules/03_sql_relational/sql/02_recursive_cte.sql">
+-- Silberschatz — WITH RECURSIVE for hierarchical queries.
+DROP TABLE IF EXISTS retail.product_hierarchy CASCADE;
+CREATE TABLE retail.product_hierarchy (
+    product_key INT PRIMARY KEY,
+    parent_key INT,
+    level INT NOT NULL
+);
+
+INSERT INTO retail.product_hierarchy (product_key, parent_key, level)
+SELECT
+    product_key,
+    NULL::INT,
+    1
+FROM retail.dim_product
+WHERE product_key <= 50;
+
+INSERT INTO retail.product_hierarchy (product_key, parent_key, level)
+SELECT
+    p.product_key,
+    (p.product_key - 1) / 10,
+    2
+FROM retail.dim_product AS p
+WHERE p.product_key > 50 AND p.product_key <= 200;
+
+INSERT INTO retail.product_hierarchy (product_key, parent_key, level)
+SELECT
+    p.product_key,
+    (p.product_key - 1) / 10,
+    3
+FROM retail.dim_product AS p
+WHERE p.product_key > 200;
+
+DROP VIEW IF EXISTS retail.v_category_tree;
+CREATE VIEW retail.v_category_tree AS
+WITH RECURSIVE tree AS (
+    SELECT product_key, parent_key, level, product_key AS root_key
+    FROM retail.product_hierarchy
+    WHERE parent_key IS NULL
+    UNION ALL
+    SELECT h.product_key, h.parent_key, h.level, t.root_key
+    FROM retail.product_hierarchy AS h
+    JOIN tree AS t ON h.parent_key = t.product_key
+)
+SELECT * FROM tree;
+</file>
+
+<file path="modules/03_sql_relational/sql/03_index_demo.sql">
+-- SQL Performance Explained — indexing chapter: index created/dropped in tests.
+-- Baseline plans are captured by pytest via EXPLAIN ANALYZE.
+DROP INDEX IF EXISTS retail.idx_fact_customer_key;
+</file>
+
+<file path="modules/03_sql_relational/tests/test_sql_slice.py">
+"""Prove-it tests for Module 03 — views, recursive CTE, index tuning."""
+
+from __future__ import annotations
+
+import os
+import re
+
+import psycopg
+import pytest
+
+from def_.common.io import get_postgres_dsn
+
+pytestmark = pytest.mark.postgres
+
+
+def _connect() -> psycopg.Connection:
+    try:
+        return psycopg.connect(get_postgres_dsn(), connect_timeout=3)
+    except psycopg.OperationalError as exc:
+        pytest.skip(f"Postgres not available: {exc}")
+
+
+def _table_exists(conn: psycopg.Connection, table: str) -> bool:
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT 1 FROM information_schema.tables
+            WHERE table_schema = 'retail' AND table_name = %s
+            """,
+            (table,),
+        )
+        return cur.fetchone() is not None
+
+
+@pytest.fixture(scope="module")
+def db() -> psycopg.Connection:
+    conn = _connect()
+    if not _table_exists(conn, "fact_sales"):
+        pytest.skip("Schema not loaded — run: make seed && make load-sql")
+    yield conn
+    conn.close()
+
+
+def test_view_sales_by_region(db: psycopg.Connection) -> None:
+    with db.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM retail.v_sales_by_region")
+        count = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(DISTINCT region) FROM retail.dim_store")
+        regions = cur.fetchone()[0]
+    assert count == regions
+    assert count >= 1
+
+
+def test_recursive_cte_tree(db: psycopg.Connection) -> None:
+    with db.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM retail.v_category_tree")
+        tree_rows = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM retail.product_hierarchy")
+        hierarchy_rows = cur.fetchone()[0]
+    assert tree_rows == hierarchy_rows
+    assert tree_rows > 0
+
+
+def _explain_ms(conn: psycopg.Connection, sql: str) -> tuple[float, str]:
+    with conn.cursor() as cur:
+        cur.execute(f"EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) {sql}")
+        plan = "\n".join(row[0] for row in cur.fetchall())
+    match = re.search(r"Execution Time:\s*([\d.]+)\s*ms", plan)
+    ms = float(match.group(1)) if match else 999999.0
+    return ms, plan
+
+
+def test_index_speedup(db: psycopg.Connection) -> None:
+    query = "SELECT SUM(f.sales_amount) FROM retail.fact_sales AS f WHERE f.customer_key = 42"
+    with db.cursor() as cur:
+        cur.execute("DROP INDEX IF EXISTS retail.idx_fact_customer_key")
+    db.commit()
+
+    without_ms, without_plan = _explain_ms(db, query)
+    assert "Seq Scan" in without_plan or "Bitmap" in without_plan
+
+    with db.cursor() as cur:
+        cur.execute("CREATE INDEX idx_fact_customer_key ON retail.fact_sales (customer_key)")
+        cur.execute("ANALYZE retail.fact_sales")
+    db.commit()
+
+    with_ms, with_plan = _explain_ms(db, query)
+    assert "Index" in with_plan
+
+    artifacts = os.path.join(os.environ.get("DATA_DIR", "data"), "sql_plans")
+    os.makedirs(artifacts, exist_ok=True)
+    with open(os.path.join(artifacts, "without_index.txt"), "w", encoding="utf-8") as f:
+        f.write(without_plan)
+    with open(os.path.join(artifacts, "with_index.txt"), "w", encoding="utf-8") as f:
+        f.write(with_plan)
+
+    # Indexed path should not be slower than sequential (allow noise on tiny data)
+    assert with_ms <= without_ms * 1.5 or "Index Scan" in with_plan
+</file>
+
+<file path="modules/04_spark_internals/join_aggregate_job.py">
+"""Star join + aggregate on the standalone Spark cluster (Learning Spark — cluster model)."""
+
+from __future__ import annotations
+
+import sys
+
+from pyspark.sql import functions as F
+
+from def_.common.io import data_dir, parquet_paths
+from def_.common.logging import get_logger
+from def_.common.spark import build_spark_session
+
+logger = get_logger(__name__)
+
+
+def main() -> None:
+    spark = build_spark_session("def-join-aggregate", cluster=True)
+    paths = parquet_paths()
+
+    fact = spark.read.parquet(str(paths["fact_sales"]))
+    dim_date = spark.read.parquet(str(paths["dim_date"]))
+    dim_product = spark.read.parquet(str(paths["dim_product"]))
+    dim_store = spark.read.parquet(str(paths["dim_store"]))
+    dim_customer = spark.read.parquet(str(paths["dim_customer"]))
+
+    joined = (
+        fact.join(dim_date, "date_key")
+        .join(dim_product, "product_key")
+        .join(dim_store, "store_key")
+        .join(dim_customer, "customer_key")
+    )
+
+    result = joined.groupBy("region", "category", "year").agg(
+        F.sum("sales_amount").alias("total_sales"),
+        F.sum("quantity").alias("total_quantity"),
+        F.count("*").alias("line_count"),
+    )
+
+    explain_dir = data_dir() / "explain"
+    explain_dir.mkdir(parents=True, exist_ok=True)
+    explain_path = explain_dir / "join_aggregate.txt"
+
+    import io
+    from contextlib import redirect_stdout
+
+    buf = io.StringIO()
+    with redirect_stdout(buf):
+        result.explain(mode="formatted")
+    explain_path.write_text(buf.getvalue(), encoding="utf-8")
+
+    out = data_dir() / "spark_output" / "join_aggregate"
+    result.write.mode("overwrite").parquet(str(out))
+    row_count = result.count()
+    logger.info("Wrote %d aggregated rows to %s", row_count, out)
+    logger.info("Explain plan saved to %s", explain_path)
+    logger.info("Open Spark UI: master :8080, application :4040 — find shuffle stages")
+
+    spark.stop()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception:
+        logger.exception("Job failed")
+        sys.exit(1)
+</file>
+
+<file path="modules/04_spark_internals/oom_exercise.py">
+"""Deliberately broken Spark job to reproduce executor OOM (High Performance Spark — memory)."""
+
+from __future__ import annotations
+
+import sys
+
+from pyspark.sql import functions as F
+
+from def_.common.io import parquet_paths
+from def_.common.logging import get_logger
+from def_.common.spark import build_spark_session
+
+logger = get_logger(__name__)
+
+# Skewed key forces one partition to hold most rows after shuffle
+SKEW_KEY = 1
+
+
+def main() -> None:
+    spark = build_spark_session(
+        "def-oom-exercise",
+        cluster=True,
+        extra_conf={
+            "spark.executor.memory": "256m",
+            "spark.executor.memoryOverhead": "64m",
+            "spark.sql.shuffle.partitions": "200",
+            "spark.sql.autoBroadcastJoinThreshold": "-1",
+        },
+    )
+    paths = parquet_paths()
+    fact = spark.read.parquet(str(paths["fact_sales"]))
+    dim_product = spark.read.parquet(str(paths["dim_product"]))
+
+    # Artificial skew column
+    skewed = fact.withColumn(
+        "skew_bucket",
+        F.when(F.col("product_key") == SKEW_KEY, F.lit(1)).otherwise(F.col("product_key")),
+    )
+
+    # Large shuffle + wide aggregation without broadcast
+    result = (
+        skewed.join(dim_product, "product_key")
+        .groupBy("skew_bucket", "category", "brand")
+        .agg(
+            F.collect_list("sales_amount").alias("all_amounts"),
+            F.sum("quantity").alias("total_qty"),
+        )
+    )
+    result.count()
+    spark.stop()
+
+
+if __name__ == "__main__":
+    logger.warning(
+        "This job is designed to OOM executors. "
+        "Fix: broadcast dim_product, repartition by skew_bucket, raise executor memory."
+    )
+    try:
+        main()
+    except Exception:
+        logger.exception("Expected failure for OOM lab")
+        sys.exit(1)
+</file>
+
+<file path="modules/04_spark_internals/README.md">
+# Module 04 — Distributed Systems & Apache Spark Internals
+
+## Interview gap this closes
+
+> Could not explain spark-submit lifecycle (driver, executors, DAG, Catalyst, jobs/stages/tasks); PySpark described as "open a session, close a session"; could not diagnose executor OOM; no experience past ~5 GB.
+
+## Reference reading
+
+- *Learning Spark* — Chapters 2–3 (architecture, SparkSession)
+- *Spark: The Definitive Guide* — Chapters 2–3, 10 (core concepts, SQL)
+- *Designing Data-Intensive Applications* (Kleppmann) — Chapter 10 (batch processing)
+
+## Prove-it exercises (this pass)
+
+1. **Cluster join/aggregate** — Run `make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py`. Acceptance: job completes on standalone cluster; `data/explain/join_aggregate.txt` contains a physical plan with shuffle/exchange.
+2. **Read the Spark UI** — Open http://localhost:8080 (cluster) and http://localhost:4040 (application). Acceptance: you can point to **Jobs → Stages → Tasks** and identify the shuffle stage.
+3. **Catalyst plans** — Compare logical vs physical sections in the explain file. Acceptance: you can name where Catalyst optimization (predicate pushdown, join reorder) appears in the formatted plan.
+4. **OOM lab** — Run `make oom-lab` (expect failure). Acceptance: you can explain skew + shuffle + low executor memory as root cause; document fix (broadcast join, repartition, `spark.executor.memory`).
+
+## Logical vs physical plan (walkthrough)
+
+1. **Logical plan** — Unresolved/reresolved logical nodes (what you asked for: joins, aggregates).
+2. **Catalyst** — Rule-based optimizer rewrites the logical plan (filter pushdown, constant folding).
+3. **Physical plan** — Concrete operators (`Exchange` = shuffle, `SortAggregate`, `BroadcastHashJoin`) scheduled as **jobs** containing **stages** separated by shuffle boundaries, each stage having **tasks** on executors.
+
+## Run this slice
+
+```bash
+make up
+make seed        # use make seed-large for shuffle-heavy runs
+make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
+```
+</file>
+
+<file path="modules/04_spark_internals/tests/test_spark_slice.py">
+"""Prove-it tests for Module 04 — Spark cluster integration."""
+
+from __future__ import annotations
+
+import os
+import socket
+import subprocess
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+EXPLAIN_FILE = Path(os.environ.get("DATA_DIR", "data")) / "explain" / "join_aggregate.txt"
+
+
+def _spark_master_reachable() -> bool:
+    host = os.environ.get("SPARK_MASTER_HOST", "localhost")
+    port = int(os.environ.get("SPARK_MASTER_PORT", "7077"))
+    try:
+        with socket.create_connection((host, port), timeout=2):
+            return True
+    except OSError:
+        return False
+
+
+@pytest.mark.spark
+def test_explain_artifact_after_submit() -> None:
+    if not _spark_master_reachable():
+        pytest.skip("Spark master not reachable — run: make up")
+
+    job = REPO_ROOT / "modules" / "04_spark_internals" / "join_aggregate_job.py"
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(REPO_ROOT / "src")
+    env["SPARK_MASTER_URL"] = os.environ.get("SPARK_MASTER_URL", "spark://localhost:7077")
+
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "exec",
+            "-T",
+            "-e",
+            "PYTHONPATH=/workspace/src",
+            "spark-master",
+            "spark-submit",
+            "--master",
+            "spark://spark-master:7077",
+            "--deploy-mode",
+            "client",
+            "--conf",
+            "spark.driver.host=spark-master",
+            "--conf",
+            "spark.driver.bindAddress=0.0.0.0",
+            f"/workspace/{job.relative_to(REPO_ROOT).as_posix()}",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=300,
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.fail(f"spark-submit failed:\n{result.stderr}\n{result.stdout}")
+
+    assert EXPLAIN_FILE.exists(), "Run join_aggregate_job to produce explain file"
+    content = EXPLAIN_FILE.read_text(encoding="utf-8")
+    assert len(content) > 50
+    assert any(kw in content.lower() for kw in ("shuffle", "exchange", "aggregate", "join"))
+
+
+def test_explain_file_exists_or_skip() -> None:
+    """Fast check when explain artifact already present from manual run."""
+    if EXPLAIN_FILE.exists():
+        assert (
+            "Physical Plan" in EXPLAIN_FILE.read_text(encoding="utf-8")
+            or len(EXPLAIN_FILE.read_text(encoding="utf-8")) > 100
+        )
+    elif not _spark_master_reachable():
+        pytest.skip("No explain file and Spark not up")
+</file>
+
+<file path="modules/05_warehousing_bi/README.md">
+# Module 05 — Data Warehousing, Dimensional Modeling & BI
+
+## Interview gap this closes
+
+> Did not know dimensions vs measures in Tableau; could not formalize star schemas and facts vs dimensions despite lakehouse/medallion experience.
+
+## Reference reading
+
+- *The Data Warehouse Toolkit* (Kimball) — Chapters 1–4 (dimensional modeling, facts/dimensions)
+- *Fundamentals of Data Engineering* (Reis & Housley) — Chapters 4–6 (modeling in modern stacks)
+
+## Prove-it exercises (stub)
+
+1. **Star schema in DuckDB** — Acceptance: dimensional model queries return correct grain per fact table.
+2. **Measures vs dimensions** — Acceptance: tests distinguish additive vs semi-additive measures.
+</file>
+
+<file path="modules/05_warehousing_bi/tests/test_module_05_stub.py">
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Module 05 stub")
+
+
+def test_star_schema_duckdb() -> None:
+    assert True
+
+
+def test_additive_measures() -> None:
+    assert True
+</file>
+
+<file path="modules/06_streaming_kafka/README.md">
+# Module 06 — Event Streaming & Kafka
+
+## Interview gap this closes
+
+> Kafka required in target JDs; formalize event-time vs processing-time beyond existing Beam experience.
+
+## Reference reading
+
+- *Kafka: The Definitive Guide* — Chapters 1–4 (architecture, producers, consumers)
+- *Streaming Systems* (Akidau) — Chapters 2–4 (windows, watermarks)
+
+## Prove-it exercises (stub)
+
+1. **Produce/consume** — Acceptance: pytest produces to local KRaft broker and consumes expected count.
+2. **Consumer groups** — Acceptance: partition assignment observable in consumer lag metrics.
+</file>
+
+<file path="modules/06_streaming_kafka/tests/test_module_06_stub.py">
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Module 06 stub")
+
+
+def test_kafka_roundtrip() -> None:
+    assert True
+
+
+def test_consumer_group() -> None:
+    assert True
+</file>
+
+<file path="modules/07_oop_design_patterns/README.md">
+# Module 07 — Object-Oriented Design & Design Patterns
+
+## Interview gap this closes
+
+> Hedged on OOP in Python; Fullstack JD expects Java/J2EE patterns fluency.
+
+## Reference reading
+
+- *Fluent Python* — Chapters 11–14 (inheritence, protocols)
+- *Design Patterns* (GoF) — Chapters 1–5 (creational, structural intro)
+
+**Optional Java track:** *Effective Java* (Bloch) — Chapters 2–4 for J2EE-oriented roles.
+
+## Prove-it exercises (stub)
+
+1. **Python protocol** — Acceptance: implement strategy pattern with typed protocol + tests.
+2. **Pattern recognition** — Acceptance: refactor exercise passes tests after applying factory method.
+</file>
+
+<file path="modules/07_oop_design_patterns/tests/test_module_07_stub.py">
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Module 07 stub")
+
+
+def test_strategy_pattern() -> None:
+    assert True
+
+
+def test_factory_refactor() -> None:
+    assert True
+</file>
+
+<file path="modules/08_ai_assisted_dev/README.md">
+# Module 08 — AI-Assisted Software Engineering
+
+## Interview gap this closes
+
+> Did not know the purpose of CLAUDE.md or how it conserves context/tokens; had only used agents via a GitHub UI.
+
+## Reference reading
+
+- Anthropic — Claude Code documentation ("Manage Claude's Memory" / CLAUDE.md)
+- *AI Engineering* (Huyen) — Chapters on context and tooling (when available)
+
+## Prove-it exercises
+
+1. **Agent memory file** — Acceptance: this repo ships [`CLAUDE.md`](../../CLAUDE.md) under ~200 lines with build/test/submit commands.
+2. **Cursor rules** — Acceptance: [`.cursor/rules/`](../../.cursor/rules/) encode project conventions (alwaysApply + Python typing).
+3. **Token discipline** — Acceptance: you can explain why long verbatim textbook paste in prompts hurts task performance vs tight project rules.
+
+## Lesson
+
+The committed agent artifacts (`CLAUDE.md`, `.cursor/rules/*.mdc`) are the graded deliverable for Module 08 in this pass.
+</file>
+
+<file path="modules/09_capstone_governance/README.md">
+# Module 09 — Capstone: Data Governance at Scale
+
+## Interview gap this closes
+
+> Governed pipelines were real but only to ~5 GB; need terabyte-scale streaming/distributed practice with measured tuning.
+
+## Reference reading
+
+- *Fundamentals of Data Engineering* (Reis & Housley) — Full lifecycle chapters
+- *Designing Data-Intensive Applications* (Kleppmann) — Chapters 11–12 (stream processing, consistency)
+- DAMA-DMBOK — Data governance framework (reference)
+
+## Prove-it exercises (stub)
+
+1. **Medallion at scale** — Acceptance: Bronze/Silver/Gold pipeline on generated multi-GB data with lineage metadata.
+2. **Performance report** — Acceptance: document shuffle bytes, spill, and tuning changes with before/after metrics.
+</file>
+
+<file path="modules/09_capstone_governance/tests/test_module_09_stub.py">
+import pytest
+
+pytestmark = pytest.mark.skip(reason="Module 09 stub")
+
+
+def test_medallion_pipeline() -> None:
+    assert True
+
+
+def test_performance_report() -> None:
+    assert True
+</file>
+
+<file path="notebooks/.gitkeep">
+
+</file>
+
+<file path="pyproject.toml">
+[project]
+name = "data-engineering-foundations"
+version = "0.1.0"
+description = "Hands-on data engineering foundations — prove-it modules with local Docker infra"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.1.0",
+    "psycopg[binary]>=3.2.0",
+    "pyarrow>=18.0.0",
+    "pyspark>=3.5.0,<4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+    "types-psycopg2>=2.9.21.20240819",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/def_"]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "modules", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src/def_"]
+mypy_path = "src"
+explicit_package_bases = true
+namespace_packages = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["pyspark.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "modules"]
+pythonpath = ["src", "."]
+markers = [
+    "integration: integration tests requiring docker services",
+    "postgres: requires Postgres from docker compose",
+    "spark: requires Spark cluster from docker compose",
+]
+addopts = "-ra --tb=short"
+
+[tool.coverage.run]
+source = ["def_"]
+omit = ["*/tests/*"]
+</file>
+
+<file path="src/def_/__init__.py">
+"""Data engineering foundations — importable package."""
+
+__version__ = "0.1.0"
+</file>
+
+<file path="src/def_/common/__init__.py">
+"""Shared helpers for modules and jobs."""
+
+from def_.common.io import data_dir, get_postgres_dsn, parquet_paths
+from def_.common.logging import get_logger
+from def_.common.spark import build_spark_session
+
+__all__ = [
+    "build_spark_session",
+    "data_dir",
+    "get_logger",
+    "get_postgres_dsn",
+    "parquet_paths",
+]
+</file>
+
+<file path="src/def_/common/io.py">
+"""I/O paths and Postgres connectivity."""
+
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+
+def data_dir() -> Path:
+    root = Path(os.environ.get("DATA_DIR", "data"))
+    root.mkdir(parents=True, exist_ok=True)
+    return root.resolve()
+
+
+def parquet_paths() -> dict[str, Path]:
+    base = data_dir() / "parquet"
+    return {
+        "fact_sales": base / "fact_sales",
+        "dim_date": base / "dim_date",
+        "dim_product": base / "dim_product",
+        "dim_store": base / "dim_store",
+        "dim_customer": base / "dim_customer",
+    }
+
+
+def get_postgres_dsn() -> str:
+    host = os.environ.get("POSTGRES_HOST", "localhost")
+    port = os.environ.get("POSTGRES_PORT", "5432")
+    db = os.environ.get("POSTGRES_DB", "def_learning")
+    user = os.environ.get("POSTGRES_USER", "def_user")
+    password = os.environ.get("POSTGRES_PASSWORD", "def_pass")
+    return f"postgresql://{user}:{password}@{host}:{port}/{db}"
+</file>
+
+<file path="src/def_/common/logging.py">
+"""Structured logging helper."""
+
+from __future__ import annotations
+
+import logging
+import sys
+
+
+def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s [%(name)s] %(message)s"))
+        logger.addHandler(handler)
+        logger.setLevel(level)
+    return logger
+</file>
+
+<file path="src/def_/common/spark.py">
+"""SparkSession builder — cluster-first, not notebook-local."""
+
+from __future__ import annotations
+
+import os
+
+from pyspark.sql import SparkSession
+
+from def_.common.logging import get_logger
+
+logger = get_logger(__name__)
+
+
+def build_spark_session(
+    app_name: str,
+    *,
+    cluster: bool = True,
+    extra_conf: dict[str, str] | None = None,
+) -> SparkSession:
+    """Build a SparkSession. Graded jobs use cluster=True (standalone master)."""
+    builder = SparkSession.builder.appName(app_name)
+    if cluster:
+        master = os.environ.get("SPARK_MASTER_URL", "spark://localhost:7077")
+        builder = builder.master(master)
+        logger.info("Connecting to cluster master: %s", master)
+    else:
+        builder = builder.master("local[2]")
+        logger.warning("Using local[*] mode — only for isolated unit tests")
+
+    conf = {
+        "spark.sql.shuffle.partitions": os.environ.get("SPARK_SHUFFLE_PARTITIONS", "8"),
+        "spark.sql.adaptive.enabled": "true",
+    }
+    if extra_conf:
+        conf.update(extra_conf)
+    for key, value in conf.items():
+        builder = builder.config(key, value)
+
+    return builder.getOrCreate()
+</file>
+
+<file path="src/def_/datagen/__init__.py">
+"""Synthetic star-schema data generator."""
+
+from def_.datagen.schema import STAR_TABLES
+
+__all__ = ["STAR_TABLES"]
+</file>
+
+<file path="src/def_/datagen/cli.py">
+"""CLI: generate star-schema Parquet at a target scale in GB."""
+
+from __future__ import annotations
+
+import argparse
+import random
+from datetime import date, timedelta
+from pathlib import Path
+
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+from def_.common.io import data_dir, parquet_paths
+from def_.common.logging import get_logger
+from def_.datagen.schema import DIM_CARDINALITIES, STAR_TABLES
+
+logger = get_logger(__name__)
+RNG = random.Random(42)
+
+# Rough bytes per fact row in Parquet (empirical; used to scale toward --scale-gb)
+BYTES_PER_FACT_ROW = 48
+
+
+def _write_table(name: str, table: pa.Table, out_path: Path) -> int:
+    out_path.mkdir(parents=True, exist_ok=True)
+    pq.write_table(  # type: ignore[no-untyped-call]
+        table, out_path / "part-00000.parquet", compression="snappy"
+    )
+    size = sum(f.stat().st_size for f in out_path.glob("**/*") if f.is_file())
+    logger.info("Wrote %s: %d rows, %.2f MB", name, table.num_rows, size / 1e6)
+    return size
+
+
+def _gen_dim_date(n: int) -> pa.Table:
+    start = date(2022, 1, 1)
+    keys: list[int] = []
+    dates: list[date] = []
+    years: list[int] = []
+    quarters: list[int] = []
+    months: list[int] = []
+    days: list[int] = []
+    for i in range(n):
+        d = start + timedelta(days=i)
+        keys.append(i + 1)
+        dates.append(d)
+        years.append(d.year)
+        quarters.append((d.month - 1) // 3 + 1)
+        months.append(d.month)
+        days.append(d.day)
+    return pa.table(
+        {
+            "date_key": pa.array(keys, type=pa.int32()),
+            "full_date": pa.array(dates, type=pa.date32()),
+            "year": pa.array(years, type=pa.int16()),
+            "quarter": pa.array(quarters, type=pa.int8()),
+            "month": pa.array(months, type=pa.int8()),
+            "day_of_month": pa.array(days, type=pa.int8()),
+        }
+    )
+
+
+def _gen_dim_product(n: int) -> pa.Table:
+    categories = ["Electronics", "Apparel", "Grocery", "Home", "Sports"]
+    return pa.table(
+        {
+            "product_key": pa.array(range(1, n + 1), type=pa.int32()),
+            "product_name": pa.array([f"Product-{i}" for i in range(1, n + 1)]),
+            "category": pa.array([categories[i % len(categories)] for i in range(n)]),
+            "subcategory": pa.array([f"Sub-{i % 20}" for i in range(n)]),
+            "brand": pa.array([f"Brand-{i % 50}" for i in range(n)]),
+            "unit_price": pa.array(
+                [round(RNG.uniform(5.0, 500.0), 2) for _ in range(n)], type=pa.float64()
+            ),
+        }
+    )
+
+
+def _gen_dim_store(n: int) -> pa.Table:
+    regions = ["North", "South", "East", "West"]
+    return pa.table(
+        {
+            "store_key": pa.array(range(1, n + 1), type=pa.int32()),
+            "store_name": pa.array([f"Store-{i}" for i in range(1, n + 1)]),
+            "city": pa.array([f"City-{i % 30}" for i in range(n)]),
+            "state": pa.array([f"ST-{i % 10}" for i in range(n)]),
+            "region": pa.array([regions[i % len(regions)] for i in range(n)]),
+        }
+    )
+
+
+def _gen_dim_customer(n: int) -> pa.Table:
+    segments = ["Consumer", "Corporate", "Home Office"]
+    return pa.table(
+        {
+            "customer_key": pa.array(range(1, n + 1), type=pa.int32()),
+            "customer_name": pa.array([f"Customer-{i}" for i in range(1, n + 1)]),
+            "segment": pa.array([segments[i % len(segments)] for i in range(n)]),
+            "country": pa.array(["US" if i % 5 else "CA" for i in range(n)]),
+        }
+    )
+
+
+def _gen_fact_sales(
+    n_rows: int,
+    n_date: int,
+    n_product: int,
+    n_store: int,
+    n_customer: int,
+) -> pa.Table:
+    sales_keys = list(range(1, n_rows + 1))
+    date_keys = [RNG.randint(1, n_date) for _ in range(n_rows)]
+    product_keys = [RNG.randint(1, n_product) for _ in range(n_rows)]
+    store_keys = [RNG.randint(1, n_store) for _ in range(n_rows)]
+    customer_keys = [RNG.randint(1, n_customer) for _ in range(n_rows)]
+    quantities = [RNG.randint(1, 10) for _ in range(n_rows)]
+    amounts = [round(q * RNG.uniform(5.0, 200.0), 2) for q in quantities]
+    return pa.table(
+        {
+            "sales_key": pa.array(sales_keys, type=pa.int64()),
+            "date_key": pa.array(date_keys, type=pa.int32()),
+            "product_key": pa.array(product_keys, type=pa.int32()),
+            "store_key": pa.array(store_keys, type=pa.int32()),
+            "customer_key": pa.array(customer_keys, type=pa.int32()),
+            "quantity": pa.array(quantities, type=pa.int32()),
+            "sales_amount": pa.array(amounts, type=pa.float64()),
+        }
+    )
+
+
+def estimate_fact_rows(scale_gb: float) -> int:
+    target_bytes = max(scale_gb, 0.001) * 1e9
+    # Subtract small dim footprint (~few MB)
+    dim_overhead = 5 * 1e6
+    fact_bytes = max(target_bytes - dim_overhead, 1e5)
+    return max(int(fact_bytes / BYTES_PER_FACT_ROW), 1_000)
+
+
+def generate(scale_gb: float) -> Path:
+    """Generate all star-schema tables; return data root."""
+    paths = parquet_paths()
+    n_date = DIM_CARDINALITIES["dim_date"]
+    n_product = DIM_CARDINALITIES["dim_product"]
+    n_store = DIM_CARDINALITIES["dim_store"]
+    n_customer = DIM_CARDINALITIES["dim_customer"]
+    n_fact = estimate_fact_rows(scale_gb)
+
+    logger.info(
+        "Target scale ~%.3f GB -> ~%d fact rows (dims fixed)",
+        scale_gb,
+        n_fact,
+    )
+
+    total = 0
+    total += _write_table("dim_date", _gen_dim_date(n_date), paths["dim_date"])
+    total += _write_table("dim_product", _gen_dim_product(n_product), paths["dim_product"])
+    total += _write_table("dim_store", _gen_dim_store(n_store), paths["dim_store"])
+    total += _write_table("dim_customer", _gen_dim_customer(n_customer), paths["dim_customer"])
+    total += _write_table(
+        "fact_sales",
+        _gen_fact_sales(n_fact, n_date, n_product, n_store, n_customer),
+        paths["fact_sales"],
+    )
+
+    root = data_dir()
+    logger.info("Total generated size: %.2f MB (%.4f GB)", total / 1e6, total / 1e9)
+    _ = STAR_TABLES  # schema reference for tooling
+    return root
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate retail star-schema Parquet")
+    parser.add_argument(
+        "--scale-gb",
+        type=float,
+        default=0.01,
+        help="Approximate total dataset size in GB (fact table dominates)",
+    )
+    args = parser.parse_args()
+    generate(args.scale_gb)
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="src/def_/datagen/schema.py">
+"""Star schema definitions (Kimball Ch. 3 — retail sales)."""
+
+from __future__ import annotations
+
+from typing import TypedDict
+
+
+class ColumnSpec(TypedDict):
+    name: str
+    dtype: str
+
+
+STAR_TABLES: dict[str, list[ColumnSpec]] = {
+    "dim_date": [
+        {"name": "date_key", "dtype": "int32"},
+        {"name": "full_date", "dtype": "date32"},
+        {"name": "year", "dtype": "int16"},
+        {"name": "quarter", "dtype": "int8"},
+        {"name": "month", "dtype": "int8"},
+        {"name": "day_of_month", "dtype": "int8"},
+    ],
+    "dim_product": [
+        {"name": "product_key", "dtype": "int32"},
+        {"name": "product_name", "dtype": "string"},
+        {"name": "category", "dtype": "string"},
+        {"name": "subcategory", "dtype": "string"},
+        {"name": "brand", "dtype": "string"},
+        {"name": "unit_price", "dtype": "float64"},
+    ],
+    "dim_store": [
+        {"name": "store_key", "dtype": "int32"},
+        {"name": "store_name", "dtype": "string"},
+        {"name": "city", "dtype": "string"},
+        {"name": "state", "dtype": "string"},
+        {"name": "region", "dtype": "string"},
+    ],
+    "dim_customer": [
+        {"name": "customer_key", "dtype": "int32"},
+        {"name": "customer_name", "dtype": "string"},
+        {"name": "segment", "dtype": "string"},
+        {"name": "country", "dtype": "string"},
+    ],
+    "fact_sales": [
+        {"name": "sales_key", "dtype": "int64"},
+        {"name": "date_key", "dtype": "int32"},
+        {"name": "product_key", "dtype": "int32"},
+        {"name": "store_key", "dtype": "int32"},
+        {"name": "customer_key", "dtype": "int32"},
+        {"name": "quantity", "dtype": "int32"},
+        {"name": "sales_amount", "dtype": "float64"},
+    ],
+}
+
+# Cardinalities for dimension tables (fact rows scale to hit --scale-gb)
+DIM_CARDINALITIES: dict[str, int] = {
+    "dim_date": 365 * 3,
+    "dim_product": 500,
+    "dim_store": 50,
+    "dim_customer": 10_000,
+}
+</file>
+
+<file path="src/def_/py.typed">
+
+</file>
+
+<file path="tests/conftest.py">
+"""Pytest configuration."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+</file>
+
+<file path="tests/test_integration.py">
+"""Top-level integration smoke tests."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from def_.common.io import data_dir, parquet_paths
+from def_.datagen.cli import estimate_fact_rows, generate
+
+
+def test_estimate_fact_rows_positive() -> None:
+    assert estimate_fact_rows(0.01) >= 1000
+
+
+def test_generate_tiny_dataset() -> None:
+    root = generate(0.001)
+    paths = parquet_paths()
+    assert root == data_dir()
+    for name, path in paths.items():
+        assert path.exists(), f"Missing {name}"
+        parquet_files = list(path.glob("**/*.parquet"))
+        assert parquet_files, f"No parquet in {name}"
+
+
+def test_parquet_paths_under_data() -> None:
+    base = data_dir()
+    assert "parquet" in str(base) or base.name == "data" or Path("data") in base.parents
+</file>
+
+<file path=".gitattributes">
+# Auto detect text files and perform LF normalization
+* text=auto
+</file>
+
+<file path=".gitignore">
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+.pdm.toml
+.pdm-python
+.pdm-build/
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
+
+# Ruff stuff:
+.ruff_cache/
+
+# PyPI configuration file
+.pypirc
+
+# Cursor  
+#  Cursor is an AI-powered code editor.`.cursorignore` specifies files/directories to 
+#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
+#  refer to https://docs.cursor.com/context/ignore-files
+.cursorignore
+.cursorindexingignore
+
+# Project-specific (local learner corpus + generated data)
+references/
+data/
+.env
+.venv/
+</file>
+
+<file path="README.md">
+# Data Engineering Foundations
+
+A hands-on learning repository that closes the gap between **applied data governance** (medallion, lineage, quality) and the **systems-internals layer** underneath: Spark driver/executors and the DAG, SQL views/CTEs and index tuning, dimensional modeling at scale.
+
+Assessment is **prove-it**: runnable jobs, captured plans, and passing pytest — not recall.
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) with Compose
+- [WSL2](https://learn.microsoft.com/en-us/windows/wsl/) (recommended on Windows)
+- [uv](https://docs.astral.sh/uv/) (Python 3.12)
+
+Place the curriculum and textbook extracts in `references/` (gitignored). See `references/big_data_engineering_curriculum_md.md` for the full module map.
+
+## Quickstart (< 10 commands)
+
+Run from **WSL** at the repo root (e.g. `/mnt/c/GitHub/data-engineering`). Without `make`, use `uv run` equivalents (see `Makefile`).
+
+**Windows (no WSL):** `py -3.12 -m uv sync --all-groups`, then `.\\.venv\\Scripts\\python.exe -m pytest` with `$env:PYTHONPATH="src"`.
+
+```bash
+cp .env.example .env
+make setup
+make up
+make seed
+make load-sql
+make test
+make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
+make check
+```
+
+- Postgres: `localhost:5432` — db `def_learning`, user `def_user`
+- Spark master UI: http://localhost:8080
+- Spark app UI (during a job): http://localhost:4040
+
+## Modules
+
+| Module | Status | Topic |
+|--------|--------|-------|
+| [01_python_model](modules/01_python_model/) | stub | Python data model |
+| [02_dsa](modules/02_dsa/) | stub | Algorithms |
+| [03_sql_relational](modules/03_sql_relational/) | **built** | Views, recursive CTEs, indexing |
+| [04_spark_internals](modules/04_spark_internals/) | **built** | Cluster jobs, Catalyst, OOM lab |
+| [05_warehousing_bi](modules/05_warehousing_bi/) | stub | Kimball / DuckDB |
+| [06_streaming_kafka](modules/06_streaming_kafka/) | stub | Kafka KRaft |
+| [07_oop_design_patterns](modules/07_oop_design_patterns/) | stub | OOP / patterns |
+| [08_ai_assisted_dev](modules/08_ai_assisted_dev/) | agent files | CLAUDE.md, Cursor rules |
+| [09_capstone_governance](modules/09_capstone_governance/) | stub | Governance at scale |
+
+## Scale knob
+
+Generate larger data for shuffle/spill practice:
+
+```bash
+make seed-large   # ~1 GB
+# or
+uv run python -m def_.datagen.cli --scale-gb 2.0
+```
+
+## Agent context
+
+- [`CLAUDE.md`](CLAUDE.md) — commands and conventions for AI assistants
+- [`.cursor/rules/`](.cursor/rules/) — Cursor project rules
+
+## License
+
+Learning use. Textbook content stays in local `references/` only.
+</file>
+
+</files>

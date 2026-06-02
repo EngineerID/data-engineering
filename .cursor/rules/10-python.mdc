@@ -1,0 +1,15 @@
+---
+description: Python typing, lint, and test conventions
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Python conventions
+
+- Python 3.12; manage deps with **uv**.
+- **mypy strict** on `src/def_/` — full type annotations on new code in `src/`.
+- **ruff** for lint + format; run `make lint` before finishing.
+- Prefer small scripts with `if __name__ == "__main__"` over notebooks for graded work.
+- Tests live beside modules (`modules/NN_*/tests/`) and in `tests/`; use pytest markers `postgres`, `spark`, `integration`.
+- Use `def_.common.spark.build_spark_session(..., cluster=True)` for Spark jobs.
+- Module loaders/jobs may live under `modules/` without strict mypy if not in `src/def_/`.
