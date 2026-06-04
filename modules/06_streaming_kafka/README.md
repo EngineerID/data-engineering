@@ -1,15 +1,29 @@
 # Module 06 — Event Streaming & Kafka
 
-## Interview gap this closes
+**Status:** light
 
-> Kafka required in target JDs; formalize event-time vs processing-time beyond existing Beam experience.
+## What's in this folder
 
-## Reference reading
+- `roundtrip.py` — produce/consume JSON on topic `def_learning_events`
+- `tests/test_kafka_roundtrip.py` — integration test (`-m kafka`)
 
-- *Kafka: The Definitive Guide* — Chapters 1–4 (architecture, producers, consumers)
-- *Streaming Systems* (Akidau) — Chapters 2–4 (windows, watermarks)
+## Infrastructure
 
-## Prove-it exercises (stub)
+Docker service: **kafka** (`infra/docker-compose.yml`, `localhost:9092`).
 
-1. **Produce/consume** — Acceptance: pytest produces to local KRaft broker and consumes expected count.
-2. **Consumer groups** — Acceptance: partition assignment observable in consumer lag metrics.
+## Run
+
+```bash
+make up
+uv run python modules/06_streaming_kafka/roundtrip.py
+uv run pytest modules/06_streaming_kafka/tests -m kafka
+```
+
+## Prove-it exercises
+
+1. **Produce/consume** — `roundtrip.py` receives all messages for a run id
+2. **Consumer groups** — each run uses an isolated group id (`def_learning_roundtrip_<uuid>`)
+
+## Further reading
+
+[`docs/curriculum.md` — Repo module 06](../../docs/curriculum.md#repo-module-06--kafka)

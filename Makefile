@@ -2,7 +2,7 @@
 .PHONY: setup up down lint typecheck test seed spark-submit sql check load-sql oom-lab
 
 UV := uv
-COMPOSE := docker compose
+COMPOSE := docker compose -f infra/docker-compose.yml
 PYTHONPATH := src:.
 
 export PYTHONPATH
@@ -27,7 +27,9 @@ typecheck:
 	$(UV) run mypy
 
 test:
-	$(UV) run pytest -m "not spark" --ignore=modules/04_spark_internals/tests
+	$(UV) run pytest -m "not spark and not kafka" \
+		--ignore=modules/04_spark_internals/tests \
+		--ignore=modules/06_streaming_kafka/tests
 
 test-all:
 	$(UV) run pytest
@@ -39,7 +41,7 @@ seed-large:
 	$(UV) run python -m def_.datagen.cli --scale-gb 1.0
 
 load-sql:
-	$(UV) run python modules/03_sql_relational/load_to_postgres.py
+	$(UV) run python modules/02_sql_relational/load_to_postgres.py
 
 sql:
 	PGPASSWORD=$${POSTGRES_PASSWORD:-def_pass} psql -h $${POSTGRES_HOST:-localhost} -p $${POSTGRES_PORT:-5432} -U $${POSTGRES_USER:-def_user} -d $${POSTGRES_DB:-def_learning}

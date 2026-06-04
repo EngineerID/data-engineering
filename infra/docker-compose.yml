@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data:/data:ro
+      - ../data:/data:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U def_user -d def_learning"]
       interval: 5s
@@ -34,8 +34,8 @@ services:
       - "8080:8080"
       - "4040:4040"
     volumes:
-      - .:/workspace
-      - ./data:/data:ro
+      - ..:/workspace
+      - ../data:/data:ro
     working_dir: /workspace
 
   spark-worker-1:
@@ -54,8 +54,8 @@ services:
     depends_on:
       - spark-master
     volumes:
-      - .:/workspace
-      - ./data:/data:ro
+      - ..:/workspace
+      - ../data:/data:ro
 
   spark-worker-2:
     image: bitnamilegacy/spark:3.5
@@ -73,8 +73,8 @@ services:
     depends_on:
       - spark-master
     volumes:
-      - .:/workspace
-      - ./data:/data:ro
+      - ..:/workspace
+      - ../data:/data:ro
 
   kafka:
     image: apache/kafka:3.8.0

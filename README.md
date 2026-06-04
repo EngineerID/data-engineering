@@ -1,22 +1,27 @@
 # Data Engineering Foundations
 
-A hands-on learning repository that closes the gap between **applied data governance** (medallion, lineage, quality) and the **systems-internals layer** underneath: Spark driver/executors and the DAG, SQL views/CTEs and index tuning, dimensional modeling at scale.
+Hands-on repo bridging **applied analytics** (SQL, BI, warehousing) and **systems internals** (Spark, SQL tuning, streaming, lakehouse patterns). Assessment is **prove-it**: runnable jobs, captured plans, and passing pytest.
 
-Assessment is **prove-it**: runnable jobs, captured plans, and passing pytest — not recall.
+## Start here
 
-## Prerequisites
+- **[Setup](docs/setup.md)** — WSL, Windows, `uv`, Docker (`infra/`), and `make` commands
+- **[Curriculum](docs/curriculum.md)** — tiered reading lists and sequencing (committed in `docs/`)
+- **[Modules & labs](docs/modules.md)** — which folder, which services, which commands
+- **[Module folders](modules/README.md)** — direct links to exercises and READMEs
 
-- [Docker](https://docs.docker.com/get-docker/) with Compose
-- [WSL2](https://learn.microsoft.com/en-us/windows/wsl/) (recommended on Windows)
-- [uv](https://docs.astral.sh/uv/) (Python 3.12)
+Optional local textbook extracts only: `references/` (gitignored). Do not commit publisher material there.
 
-Place the curriculum and textbook extracts in `references/` (gitignored). See `references/big_data_engineering_curriculum_md.md` for the full module map.
+## Learner path
 
-## Quickstart (< 10 commands)
+1. [README.md](README.md) — you are here
+2. [docs/setup.md](docs/setup.md) — WSL, Docker, `uv`, `make`
+3. [docs/modules.md](docs/modules.md) — which service and commands per module
+4. [modules/NN_*/README.md](modules/README.md) — exercises for the module you are on (e.g. [02 SQL](modules/02_sql_relational/README.md))
+5. [docs/curriculum.md](docs/curriculum.md) — reading lists when you need depth
 
-Run from **WSL** at the repo root (e.g. `/mnt/c/GitHub/data-engineering`). Without `make`, use `uv run` equivalents (see `Makefile`).
+## Quickstart
 
-**Windows (no WSL):** `py -3.12 -m uv sync --all-groups`, then `.\\.venv\\Scripts\\python.exe -m pytest` with `$env:PYTHONPATH="src"`.
+Run from **WSL** at the repo root. See [setup](docs/setup.md) for Windows without WSL.
 
 ```bash
 cp .env.example .env
@@ -29,39 +34,31 @@ make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
 make check
 ```
 
-- Postgres: `localhost:5432` — db `def_learning`, user `def_user`
-- Spark master UI: http://localhost:8080
-- Spark app UI (during a job): http://localhost:4040
+## Modules (01–08)
 
-## Modules
+**DSA** is studied in a **separate repository**, in parallel with repo module 02 (SQL).
 
-| Module | Status | Topic |
-|--------|--------|-------|
-| [01_python_model](modules/01_python_model/) | stub | Python data model |
-| [02_dsa](modules/02_dsa/) | stub | Algorithms |
-| [03_sql_relational](modules/03_sql_relational/) | **built** | Views, recursive CTEs, indexing |
-| [04_spark_internals](modules/04_spark_internals/) | **built** | Cluster jobs, Catalyst, OOM lab |
-| [05_warehousing_bi](modules/05_warehousing_bi/) | stub | Kimball / DuckDB |
-| [06_streaming_kafka](modules/06_streaming_kafka/) | stub | Kafka KRaft |
-| [07_oop_design_patterns](modules/07_oop_design_patterns/) | stub | OOP / patterns |
-| [08_ai_assisted_dev](modules/08_ai_assisted_dev/) | agent files | CLAUDE.md, Cursor rules |
-| [09_capstone_governance](modules/09_capstone_governance/) | stub | Governance at scale |
+- **01** [Python](modules/01_python_model/) · light
+- **02** [SQL](modules/02_sql_relational/) · **built**
+- **03** [BI](modules/03_bi_tools/) · light
+- **04** [PySpark](modules/04_spark_internals/) · **built**
+- **05** [Warehousing](modules/05_warehousing/) · light
+- **06** [Kafka](modules/06_streaming_kafka/) · light
+- **07** [AI-assisted](modules/07_ai_assisted_dev/) · agent files
+- **08** [Lakehouse](modules/08_lakehouse_medallion/) · light
 
 ## Scale knob
 
-Generate larger data for shuffle/spill practice:
-
 ```bash
-make seed-large   # ~1 GB
-# or
-uv run python -m def_.datagen.cli --scale-gb 2.0
+make seed-large
+# or: uv run python -m def_.datagen.cli --scale-gb 2.0
 ```
 
 ## Agent context
 
-- [`CLAUDE.md`](CLAUDE.md) — commands and conventions for AI assistants
-- [`.cursor/rules/`](.cursor/rules/) — Cursor project rules
+- [`CLAUDE.md`](CLAUDE.md)
+- [`.cursor/rules/`](.cursor/rules/)
 
 ## License
 
-Learning use. Textbook content stays in local `references/` only.
+Learning use. Keep long textbook paste in local `references/` only.

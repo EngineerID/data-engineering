@@ -8,7 +8,7 @@ alwaysApply: true
 - Repo teaches **systems internals** beneath governance/medallion skills — driver/executor, SQL relational model, indexing, Catalyst plans.
 - **Spark:** submittable jobs on the local standalone Docker cluster (`make spark-submit`); not notebook-first. Never use `local[*]` for graded Module 04 work.
 - **Tests:** prove-it acceptance tests per exercise; `make check` must pass before claiming done.
-- **`references/`** is gitignored local corpus — paraphrase only; cite *Book — Chapter N*; no long verbatim paste into committed files.
+- **`docs/curriculum.md`** is the committed curriculum; **`references/`** is gitignored optional textbook extracts — paraphrase only; cite *Book — Chapter N*; no long verbatim paste into committed files.
 - **Commands:** WSL at repo root — `make setup`, `make up`, `make seed`, `make load-sql`, `make check`. See `CLAUDE.md`.
 - **Package:** import `def_` from `src/def_/`; shared Spark/IO in `def_.common`.
-- **Scope:** first pass built modules 03–04 + datagen; other modules are README + stub tests only unless asked to expand.
+- **Scope:** first pass built modules 02 + 04 + datagen; other modules are README + stub tests only unless asked to expand.

@@ -1,4 +1,4 @@
-"""Prove-it tests for Module 03 — views, recursive CTE, index tuning."""
+"""Prove-it tests for Module 02 — views, recursive CTE, index tuning."""
 
 from __future__ import annotations
 

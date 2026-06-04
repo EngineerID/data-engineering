@@ -37,6 +37,8 @@ def test_explain_artifact_after_submit() -> None:
         [
             "docker",
             "compose",
+            "-f",
+            "infra/docker-compose.yml",
             "exec",
             "-T",
             "-e",
