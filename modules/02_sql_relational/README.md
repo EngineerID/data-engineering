@@ -52,7 +52,7 @@ Optional: `make sql` for an interactive `psql` shell.
 
 - **Index** — Q1 clustered vs non-clustered (physical row order vs separate B-tree);
   Q2 why indexes hurt writes + SARGability (`YEAR(col)=2026` and leading `%` kill the
-  index). See `notes/` and the EXPLAIN artifacts.
+  index). See the "Worked example: reading the plan" section below for real captured plans.
 - **Trigger** — Q1 AFTER vs INSTEAD OF; Q2 classic danger: hidden side-effects/cascades,
   hard to reason about — keep business logic in code, integrity/audit in triggers.
 - **Stored procedure** — Q1 one advantage (server-side, reusable, fewer round-trips) +
@@ -62,6 +62,55 @@ Optional: `make sql` for an interactive `psql` shell.
 - **RBAC / RLS** — Q1 enforce in the engine not the app; Q2 leakage risk if the policy
   predicate is wrong; superusers bypass RLS (use `FORCE` + non-superuser roles).
 - **Normalization / OLTP-OLAP / isolation** — see `notes/normalization_oltp_olap.md`.
+
+## Worked example: reading the plan (SARGability)
+
+`test_index_speedup` runs the same query with and without an index and saves both plans
+to `data/sql_plans/`. Below are **real captured plans** from this repo's seed data
+(`WHERE customer_key = 42`). The lesson is *how to read a plan*, not "index = always
+faster":
+
+**Without index** — `data/sql_plans/without_index.txt`:
+```
+Aggregate  (cost=48.70..48.71 rows=1 ...) (actual time=0.247..0.273 ...)
+  Buffers: shared hit=22
+  ->  Seq Scan on fact_sales f  (cost=0.00..48.67 rows=11 ...) (actual time=0.241..0.242 ...)
+        Filter: (customer_key = 42)
+        Rows Removed by Filter: 2083
+Execution Time: 0.323 ms
+```
+
+**With index** — `data/sql_plans/with_index.txt`:
+```
+Aggregate  (cost=8.30..8.31 rows=1 ...) (actual time=12.061..12.064 ...)
+  Buffers: shared hit=3 read=2
+  ->  Index Scan using idx_fact_customer_key on fact_sales f  (cost=0.28..8.30 rows=1 ...)
+        Index Cond: (customer_key = 42)
+Execution Time: 12.088 ms
+```
+
+What an interviewer wants you to notice:
+
+- **Seq Scan + `Rows Removed by Filter: 2083`** = the engine read every row and threw
+  most away. **Index Scan + `Index Cond`** = it jumped straight to matching rows.
+- **The honest twist:** on this *tiny* table the Seq Scan is faster in wall-clock
+  (0.32 ms vs 12 ms — the index path paid a cold-cache `read=2`). The signals that
+  actually predict the win at scale are the **planner cost (48.70 → 8.30)** and
+  **buffers touched (22 → 5)**. That's why the test asserts on **plan shape** (an
+  `Index Scan` appears), not on raw milliseconds — wall-clock on toy data is noise.
+  Indexes pay off as the table grows and the filter is selective.
+- **SARGability** decides whether the index can even be used. `Index Cond:
+  (customer_key = 42)` is SARGable. These are **not** (they force a Seq Scan):
+  ```sql
+  WHERE YEAR(order_date) = 2026     -- ❌ function on the column
+  WHERE order_date >= '2026-01-01'  -- ✅ rewrite as a range
+        AND order_date < '2027-01-01'
+  WHERE email LIKE '%@gmail.com'    -- ❌ leading wildcard
+  WHERE email LIKE 'ivan%'          -- ✅ prefix is fine
+  ```
+
+Regenerate the artifacts anytime: `make load-sql` then
+`uv run pytest modules/02_sql_relational/tests -k index -m postgres`.
 
 ## Dialect note
 
