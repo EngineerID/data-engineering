@@ -27,17 +27,13 @@ def idempotent_merge_demo() -> MergeResult:
     CDC event hits the UPDATE branch and overwrites in place — no duplicate row.
     """
     con = duckdb.connect()
+    con.execute("CREATE TABLE target (id INTEGER PRIMARY KEY, value INTEGER, updated_at TIMESTAMP)")
     con.execute(
-        "CREATE TABLE target (id INTEGER PRIMARY KEY, value INTEGER, updated_at TIMESTAMP)"
-    )
-    con.execute(
-        "CREATE TABLE staging AS "
-        "SELECT * FROM (VALUES (1, 10), (2, 20), (3, 30)) AS t(id, value)"
+        "CREATE TABLE staging AS SELECT * FROM (VALUES (1, 10), (2, 20), (3, 30)) AS t(id, value)"
     )
 
     upsert = (
-        "INSERT OR REPLACE INTO target (id, value, updated_at) "
-        "SELECT id, value, now() FROM staging"
+        "INSERT OR REPLACE INTO target (id, value, updated_at) SELECT id, value, now() FROM staging"
     )
     con.execute(upsert)
     first = con.sql("SELECT COUNT(*) FROM target").fetchone()[0]

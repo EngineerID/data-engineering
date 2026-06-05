@@ -102,8 +102,7 @@ def test_top_n_per_region(db: psycopg.Connection) -> None:
     """Window pattern: at most 3 products per region, ranked 1..3 by revenue."""
     with db.cursor() as cur:
         cur.execute(
-            "SELECT region, COUNT(*), MAX(rn) FROM retail.v_top_products_per_region "
-            "GROUP BY region"
+            "SELECT region, COUNT(*), MAX(rn) FROM retail.v_top_products_per_region GROUP BY region"
         )
         rows = cur.fetchall()
     assert rows, "expected at least one region"
@@ -115,9 +114,7 @@ def test_top_n_per_region(db: psycopg.Connection) -> None:
 def test_monthly_running_total_is_cumulative(db: psycopg.Connection) -> None:
     """LAG + windowed SUM: running_total never decreases (revenue is positive)."""
     with db.cursor() as cur:
-        cur.execute(
-            "SELECT running_total FROM retail.v_monthly_revenue ORDER BY year, month"
-        )
+        cur.execute("SELECT running_total FROM retail.v_monthly_revenue ORDER BY year, month")
         totals = [float(r[0]) for r in cur.fetchall()]
     assert len(totals) >= 1
     assert all(b >= a for a, b in zip(totals, totals[1:], strict=False))
@@ -127,8 +124,7 @@ def test_dedup_keeps_latest(db: psycopg.Connection) -> None:
     """ROW_NUMBER dedup keeps the most recent row per email."""
     with db.cursor() as cur:
         cur.execute(
-            "SELECT full_name FROM retail.v_customer_emails_deduped "
-            "WHERE email = 'a@example.com'"
+            "SELECT full_name FROM retail.v_customer_emails_deduped WHERE email = 'a@example.com'"
         )
         name = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM retail.v_customer_emails_deduped")
