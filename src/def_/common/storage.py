@@ -5,11 +5,9 @@ interface and swaps clouds by configuration, not code. We target three **local
 emulators** so the repo keeps its "local Docker only — no cloud APIs, no spend,
 no credentials" rule while still exercising real S3/Blob/GCS client paths:
 
-| Cloud   | Service           | Emulator         | Default endpoint        |
-|---------|-------------------|------------------|-------------------------|
-| ``aws`` | S3                | LocalStack       | http://localhost:4566   |
-| ``gcp`` | Cloud Storage     | fake-gcs-server  | http://localhost:4443   |
-| ``azure`` | Blob / ADLS Gen2 | Azurite          | http://localhost:10000  |
+- ``aws`` — S3 · LocalStack · http://localhost:4566
+- ``gcp`` — Cloud Storage · fake-gcs-server · http://localhost:4443
+- ``azure`` — Blob / ADLS Gen2 · Azurite · http://localhost:10000
 
 Backends (``s3fs``, ``gcsfs``, ``adlfs``) are in the optional ``cloud`` group and
 imported lazily, so the base install and ``mypy`` do not require them.

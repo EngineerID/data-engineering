@@ -11,4 +11,4 @@ alwaysApply: true
 - **`docs/curriculum.md`** is the committed curriculum; **`references/`** is gitignored optional textbook extracts — paraphrase only; cite *Book — Chapter N*; no long verbatim paste into committed files.
 - **Commands:** WSL at repo root — `make setup`, `make up`, `make seed`, `make load-sql`, `make check`. See `CLAUDE.md`.
 - **Package:** import `def_` from `src/def_/`; shared Spark/IO in `def_.common`.
-- **Scope:** first pass built modules 02 + 04 + datagen; other modules are README + stub tests only unless asked to expand.
+- **Scope:** modules 02, 03, 04, 05, 06, 08, 09, 10 are built; 01 is light by design; 07 is agent files. See `docs/progression.md` (beginner→cap ladder) and `docs/scope-cap.md` (depth ceiling) as the source of truth for what exists and how deep — don't add scope past the cap.

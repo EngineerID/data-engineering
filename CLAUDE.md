@@ -58,6 +58,7 @@ a standing instruction.
 3. **Typed `src/`** — Fully annotated; `make typecheck` must pass before done.
 4. **Copyright** — Paraphrase concepts in READMEs; cite as *Book — Chapter N*; never paste long verbatim text from `references/`.
 5. **Markdown style — no tables** — Write every `.md` in this repo (READMEs, notes, docs) as **clean prose and bullet lists, never pipe tables**. This is a standing instruction for all future AI and human contributors: before you write or edit a Markdown document, render any tabular thought as a list (one bullet per item, with `·`- or `—`-separated fields inside the bullet) or as short prose. Rationale: pipe tables are brittle to diff, wrap badly in terminals and narrow viewports, and are harder for both humans and tools to read and patch line-by-line. Lists stay readable and machine-parseable at any width. If existing tables are found, convert them on touch.
+   - **ASCII for load-bearing tokens.** Identifiers, filenames, paths, dict/storage keys, CLI flags, env vars, and code literals must be plain ASCII — never curly quotes, em dashes, or symbols that can't be typed at a terminal or matched by a string compare. Prose and bullet separators may use the established Unicode set already in use across the repo (`·` `—` `→` `≙` and the ✅/❌ markers in worked examples); do not mass-convert those. The point is to keep anything a machine parses typeable and diff-stable, not to strip punctuation from explanatory text.
 
 ## Spark session
 
