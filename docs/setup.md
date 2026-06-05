@@ -10,13 +10,33 @@
 
 Run from the **repository root** in WSL (e.g. `/mnt/c/GitHub/data-engineering`). Paths like `modules/` and `src/` assume the root as the working directory.
 
-**Windows without WSL:**
+## Native Windows (no WSL)
+
+WSL is **not required**. Use the bundled PowerShell task runner [`tasks.ps1`](../tasks.ps1),
+which mirrors the Makefile targets against the local `.venv` and Docker Desktop:
 
 ```powershell
-py -3.12 -m uv sync --all-groups
-$env:PYTHONPATH = "src"
-.\.venv\Scripts\python.exe -m pytest
+Copy-Item .env.example .env
+.\tasks.ps1 setup        # uv sync if uv is present, else pip install -e .[dev] into .venv
+.\tasks.ps1 up           # Docker services (needs Docker Desktop running)
+.\tasks.ps1 seed
+.\tasks.ps1 test
+.\tasks.ps1 check
 ```
+
+Available tasks: `setup up down up-cloud down-cloud seed seed-large load-sql lint
+typecheck test test-cloud check spark-submit <job> oom-lab`.
+
+If you prefer raw commands, the venv interpreter works directly:
+
+```powershell
+$env:PYTHONPATH = "src;."
+.\.venv\Scripts\python.exe -m pytest -m "not spark and not kafka and not cloud"
+```
+
+> **Note:** `make`, `psql`, and `spark-submit` are not on the Windows PATH — they
+> run inside WSL or the Docker containers. The PowerShell tasks above invoke the
+> containerized `spark-submit` for you.
 
 ## First-time setup
 
@@ -41,6 +61,13 @@ make down     # stop all services
 - **Spark app UI** `4040` — module 04 (while a job runs)
 - **Spark master RPC** `7077` — module 04 Spark
 - **Kafka** `9092` — module 06 streaming (light)
+
+Cloud emulators (module 09) start under a separate profile and are **not** part of `make up`:
+
+```bash
+make up-cloud      # LocalStack (S3 :4566), fake-gcs (:4443), Azurite (:10000)
+make down-cloud
+```
 
 Details: [`infra/README.md`](../infra/README.md).
 
@@ -69,7 +96,8 @@ uv run pytest modules/06_streaming_kafka/tests -m kafka
 - `make sql` — `psql` shell
 - `make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py` — standalone Spark cluster
 - `make oom-lab` — module 04 OOM exercise (expect failure)
-- `make test` — pytest (skips Spark integration by default)
+- `make test` — pytest (skips Spark/Kafka/cloud integration by default)
+- `make test-cloud` — module 09 cloud roundtrip (needs `make up-cloud` + `uv sync --extra cloud`)
 - `make check` — lint + typecheck + test
 
 ## Quickstart (full path)

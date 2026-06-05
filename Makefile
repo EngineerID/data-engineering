@@ -1,5 +1,5 @@
 # Data Engineering Foundations — run from WSL at repo root.
-.PHONY: setup up down lint typecheck test seed spark-submit sql check load-sql oom-lab
+.PHONY: setup up down up-cloud down-cloud lint typecheck test test-cloud seed spark-submit sql check load-sql oom-lab
 
 UV := uv
 COMPOSE := docker compose -f infra/docker-compose.yml
@@ -19,6 +19,13 @@ up:
 down:
 	$(COMPOSE) down
 
+up-cloud:
+	$(COMPOSE) --profile cloud up -d localstack fake-gcs azurite
+	@echo "LocalStack S3: http://localhost:4566  | fake-gcs: http://localhost:4443  | Azurite: http://localhost:10000"
+
+down-cloud:
+	$(COMPOSE) --profile cloud down
+
 lint:
 	$(UV) run ruff check src modules tests
 	$(UV) run ruff format --check src modules tests
@@ -27,9 +34,12 @@ typecheck:
 	$(UV) run mypy
 
 test:
-	$(UV) run pytest -m "not spark and not kafka" \
+	$(UV) run pytest -m "not spark and not kafka and not cloud" \
 		--ignore=modules/04_spark_internals/tests \
 		--ignore=modules/06_streaming_kafka/tests
+
+test-cloud:
+	$(UV) run pytest modules/09_cloud_portability/tests -m cloud
 
 test-all:
 	$(UV) run pytest

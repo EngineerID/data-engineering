@@ -40,6 +40,7 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+.claude/settings.local.json
 .cursor/rules/00-project.mdc
 .cursor/rules/10-python.mdc
 .env.example
@@ -47,31 +48,51 @@ The content is organized as follows:
 .gitignore
 .pre-commit-config.yaml
 CLAUDE.md
-docker-compose.yml
+docs/curriculum.md
+docs/modules.md
+docs/README.md
+docs/setup.md
+infra/docker-compose.yml
+infra/README.md
 Makefile
+modules/01_python_model/exercises.py
 modules/01_python_model/README.md
-modules/01_python_model/tests/test_module_01_stub.py
-modules/02_dsa/README.md
-modules/02_dsa/tests/test_module_02_stub.py
-modules/03_sql_relational/load_to_postgres.py
-modules/03_sql_relational/README.md
-modules/03_sql_relational/sql/01_views.sql
-modules/03_sql_relational/sql/02_recursive_cte.sql
-modules/03_sql_relational/sql/03_index_demo.sql
-modules/03_sql_relational/tests/test_sql_slice.py
+modules/01_python_model/tests/test_python_model.py
+modules/02_sql_relational/load_to_postgres.py
+modules/02_sql_relational/README.md
+modules/02_sql_relational/sql/01_views.sql
+modules/02_sql_relational/sql/02_recursive_cte.sql
+modules/02_sql_relational/sql/03_index_demo.sql
+modules/02_sql_relational/tests/test_sql_slice.py
+modules/03_bi_tools/notes/grain_checklist.md
+modules/03_bi_tools/notes/lineage_example.md
+modules/03_bi_tools/notes/tool_comparison.md
+modules/03_bi_tools/README.md
+modules/03_bi_tools/tests/test_bi_notes.py
 modules/04_spark_internals/join_aggregate_job.py
 modules/04_spark_internals/oom_exercise.py
 modules/04_spark_internals/README.md
 modules/04_spark_internals/tests/test_spark_slice.py
-modules/05_warehousing_bi/README.md
-modules/05_warehousing_bi/tests/test_module_05_stub.py
+modules/05_warehousing/dimensional_modeling.py
+modules/05_warehousing/olap_analytics.py
+modules/05_warehousing/query_star_schema.py
+modules/05_warehousing/README.md
+modules/05_warehousing/tests/test_dimensional_modeling.py
+modules/05_warehousing/tests/test_olap_analytics.py
+modules/05_warehousing/tests/test_warehousing_duckdb.py
 modules/06_streaming_kafka/README.md
-modules/06_streaming_kafka/tests/test_module_06_stub.py
-modules/07_oop_design_patterns/README.md
-modules/07_oop_design_patterns/tests/test_module_07_stub.py
-modules/08_ai_assisted_dev/README.md
-modules/09_capstone_governance/README.md
-modules/09_capstone_governance/tests/test_module_09_stub.py
+modules/06_streaming_kafka/roundtrip.py
+modules/06_streaming_kafka/tests/test_kafka_roundtrip.py
+modules/07_ai_assisted_dev/README.md
+modules/08_lakehouse_medallion/delta_concepts.md
+modules/08_lakehouse_medallion/medallion_pipeline.py
+modules/08_lakehouse_medallion/README.md
+modules/08_lakehouse_medallion/tests/test_medallion_pipeline.py
+modules/09_cloud_portability/concepts.md
+modules/09_cloud_portability/object_store_roundtrip.py
+modules/09_cloud_portability/README.md
+modules/09_cloud_portability/tests/test_cloud_storage.py
+modules/README.md
 notebooks/.gitkeep
 pyproject.toml
 README.md
@@ -80,10 +101,12 @@ src/def_/common/__init__.py
 src/def_/common/io.py
 src/def_/common/logging.py
 src/def_/common/spark.py
+src/def_/common/storage.py
 src/def_/datagen/__init__.py
 src/def_/datagen/cli.py
 src/def_/datagen/schema.py
 src/def_/py.typed
+tasks.ps1
 tests/conftest.py
 tests/test_integration.py
 </directory_structure>
@@ -91,21 +114,1009 @@ tests/test_integration.py
 <files>
 This section contains the contents of the repository's files.
 
-<file path=".cursor/rules/00-project.mdc">
----
-description: Data Engineering Foundations project conventions
-alwaysApply: true
----
+<file path=".claude/settings.local.json">
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m pytest modules/05_warehousing/tests -q 2>&1 | Select-Object -Last 20)",
+      "PowerShell($py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m pip install -q \"fsspec>=2024.9.0\" \"s3fs>=2024.9.0\" \"gcsfs>=2024.9.0\" \"adlfs>=2024.7.0\" 2>&1 | Select-Object -Last 8; \"exit=$LASTEXITCODE\")",
+      "PowerShell(py *)",
+      "PowerShell($py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m ensurepip --upgrade 2>&1 | Select-Object -Last 5; \"exit=$LASTEXITCODE\")",
+      "PowerShell($py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m pip install -q \"fsspec>=2024.9.0\" \"s3fs>=2024.9.0\" \"gcsfs>=2024.9.0\" \"adlfs>=2024.7.0\" 2>&1 | Select-Object -Last 6; \"exit=$LASTEXITCODE\")",
+      "PowerShell($py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -c \"import importlib.util as u; [print\\(f'{m:8} ' + \\('OK' if u.find_spec\\(m\\) else 'MISSING'\\)\\) for m in ['fsspec','s3fs','gcsfs','adlfs']]\"; \"---docker---\"; try { docker info --format '{{.ServerVersion}}' 2>$null } catch { \"daemon not up yet\" })",
+      "PowerShell(docker compose *)",
+      "PowerShell($ok=$false; for\\($i=0;$i -lt 20;$i++\\){ try { $h=\\(Invoke-WebRequest -UseBasicParsing http://localhost:4566/_localstack/health -TimeoutSec 2\\).StatusCode; if\\($h -eq 200\\){$ok=$true; break} } catch {} ; Start-Sleep -Milliseconds 1500 }; \"localstack_healthy=$ok\")",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; foreach\\($c in @\\(\"aws\",\"gcp\",\"azure\"\\)\\){ \"=== $c ===\"; & $py modules/09_cloud_portability/object_store_roundtrip.py --cloud $c 2>&1 | Select-String -Pattern \"rows_roundtripped|Error|Traceback|error\" | Select-Object -First 5 })",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; foreach\\($c in @\\(\"aws\",\"gcp\",\"azure\"\\)\\){ \"=== $c ===\"; & $py modules/09_cloud_portability/object_store_roundtrip.py --cloud $c 2>&1 | Select-String -Pattern \"rows_roundtripped|Error:|TypeError|ValueError|Exception\" | Select-Object -First 4 })",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; foreach\\($c in @\\(\"aws\",\"gcp\",\"azure\"\\)\\){ \"=== $c ===\"; & $py modules/09_cloud_portability/object_store_roundtrip.py --cloud $c 2>&1 | Select-String -Pattern \"rows_roundtripped|TypeError|ValueError|HttpResponseError|FileNotFound|does not exist|HttpError\" | Select-Object -First 3 })",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; foreach\\($c in @\\(\"aws\",\"gcp\",\"azure\"\\)\\){ \"=== $c ===\"; & $py modules/09_cloud_portability/object_store_roundtrip.py --cloud $c 2>&1 | Select-String -Pattern \"rows_roundtripped|Error|Traceback|does not exist|Constraint\" | Select-Object -First 3 })",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py modules/09_cloud_portability/object_store_roundtrip.py --cloud gcp 2>&1 | Select-String -Pattern \"line \\\\d+, in|HttpError|object_store_roundtrip\" | Select-Object -First 12)",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py modules/09_cloud_portability/object_store_roundtrip.py --cloud gcp 2>&1 | Select-String -Pattern \"roundtrip.py\" -Context 0,1 | Select-Object -First 10)",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; $out = & $py modules/09_cloud_portability/object_store_roundtrip.py --cloud gcp 2>$null; \"stdout: $out\"; \"exitcode: $LASTEXITCODE\")",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m pytest modules/09_cloud_portability/tests -m cloud -p no:cacheprovider -q 2>$null | Select-Object -Last 8)",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m pytest modules/09_cloud_portability/tests -m cloud -p no:cacheprovider -q 2>$null | Select-Object -Last 4; \"=== ruff+mypy ===\"; & $py -m ruff check src modules tests; & $py -m ruff format --check src modules tests | Select-Object -Last 1; & $py -m mypy)",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m pytest modules/09_cloud_portability/tests -m cloud -p no:cacheprovider -q 2>$null | Select-Object -Last 4)",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; & $py -m pytest -m \"not spark and not kafka and not cloud\" --ignore=modules/04_spark_internals/tests --ignore=modules/06_streaming_kafka/tests -q 2>$null | Select-Object -Last 3)",
+      "PowerShell($env:PYTHONPATH=\"src;.\"; $py=\"C:\\\\GitHub\\\\data-engineering\\\\.venv\\\\Scripts\\\\python.exe\"; \"=== ruff check ===\"; & $py -m ruff check src modules tests; \"=== ruff format --check ===\"; & $py -m ruff format --check src modules tests | Select-Object -Last 1; \"=== mypy ===\"; & $py -m mypy; \"=== offline pytest ===\"; & $py -m pytest -m \"not spark and not kafka and not cloud\" --ignore=modules/04_spark_internals/tests --ignore=modules/06_streaming_kafka/tests -q 2>$null | Select-Object -Last 2; \"=== cloud pytest ===\"; & $py -m pytest modules/09_cloud_portability/tests -m cloud -p no:cacheprovider -q 2>$null | Select-Object -Last 2)",
+      "Bash([ -f \"$f\" ])",
+      "Bash(command -v repomix npx)",
+      "Bash(repomix)"
+    ]
+  }
+}
+</file>
 
-# Project rules
+<file path="modules/05_warehousing/dimensional_modeling.py">
+"""Module 05 — dimensional modeling on the retail star schema (DuckDB).
 
-- Repo teaches **systems internals** beneath governance/medallion skills — driver/executor, SQL relational model, indexing, Catalyst plans.
-- **Spark:** submittable jobs on the local standalone Docker cluster (`make spark-submit`); not notebook-first. Never use `local[*]` for graded Module 04 work.
-- **Tests:** prove-it acceptance tests per exercise; `make check` must pass before claiming done.
-- **`references/`** is gitignored local corpus — paraphrase only; cite *Book — Chapter N*; no long verbatim paste into committed files.
-- **Commands:** WSL at repo root — `make setup`, `make up`, `make seed`, `make load-sql`, `make check`. See `CLAUDE.md`.
-- **Package:** import `def_` from `src/def_/`; shared Spark/IO in `def_.common`.
-- **Scope:** first pass built modules 03–04 + datagen; other modules are README + stub tests only unless asked to expand.
+Three prove-it concepts, all runnable over `make seed` Parquet with no Docker:
+
+1. **Grain & the fan-out trap** — joining a fact to a dimension at the wrong
+   grain double-counts a measure. We prove the correct grain.
+2. **SCD Type 2** — a slowly changing dimension keeps history: changed rows are
+   expired and a new current version is inserted (`valid_from`/`valid_to`/`is_current`).
+3. **Star vs snowflake** — normalizing a dimension trades fewer redundant strings
+   for an extra join. We show both return the same revenue.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+import duckdb
+
+from def_.common.io import parquet_paths
+
+# A subset of customers "change segment" between two snapshots; deterministic so
+# tests can assert exact history. Every 7th customer is rotated to the next segment.
+SEGMENTS = ["Consumer", "Corporate", "Home Office"]
+V0_DATE = "2024-01-01"
+V1_DATE = "2024-06-01"
+
+
+def _connect() -> duckdb.DuckDBPyConnection:
+    """In-memory DuckDB with star-schema Parquet registered as views."""
+    paths = parquet_paths()
+    con = duckdb.connect()
+    for name, path in paths.items():
+        con.sql(f"CREATE VIEW {name} AS SELECT * FROM read_parquet('{path}/**/*.parquet')")
+    return con
+
+
+# --------------------------------------------------------------------------- #
+# 1. Grain & the fan-out trap
+# --------------------------------------------------------------------------- #
+def fanout_trap() -> dict[str, float]:
+    """Show how a wrong-grain join inflates a SUM.
+
+    ``dim_store`` has one row per store, so the join is safe. We *simulate* a
+    fan-out by joining to a deliberately duplicated dimension and compare the
+    summed measure against the true total.
+    """
+    con = _connect()
+    true_total = con.sql("SELECT SUM(sales_amount) FROM fact_sales").fetchone()[0]
+
+    # A dimension with 2 rows per store (e.g. a careless join to a bridge table)
+    # duplicates every fact row, doubling the measure.
+    inflated = con.sql(
+        """
+        WITH dup_store AS (
+            SELECT store_key, region FROM dim_store
+            UNION ALL
+            SELECT store_key, region FROM dim_store
+        )
+        SELECT SUM(f.sales_amount)
+        FROM fact_sales f
+        JOIN dup_store d ON f.store_key = d.store_key
+        """
+    ).fetchone()[0]
+    con.close()
+    return {"true_total": float(true_total), "inflated_total": float(inflated)}
+
+
+# --------------------------------------------------------------------------- #
+# 2. Slowly Changing Dimension — Type 2
+# --------------------------------------------------------------------------- #
+def build_scd2() -> duckdb.DuckDBPyConnection:
+    """Materialize a Type-2 history table ``scd2_customer`` from two snapshots.
+
+    Returns the live connection so callers/tests can query it.
+    """
+    con = _connect()
+    con.sql(
+        f"""
+        CREATE TABLE customer_v0 AS
+            SELECT customer_key, segment FROM dim_customer;
+
+        CREATE TABLE customer_v1 AS
+            SELECT
+                customer_key,
+                CASE
+                    WHEN customer_key % 7 = 0
+                    THEN list_value('Consumer','Corporate','Home Office')[
+                             (list_position(
+                                 list_value('Consumer','Corporate','Home Office'), segment
+                             ) % 3) + 1
+                         ]
+                    ELSE segment
+                END AS segment
+            FROM customer_v0;
+
+        CREATE TABLE scd2_customer AS
+            -- Expired versions: rows whose segment changed between v0 and v1.
+            SELECT v0.customer_key, v0.segment,
+                   DATE '{V0_DATE}' AS valid_from,
+                   DATE '{V1_DATE}' AS valid_to,
+                   FALSE AS is_current
+            FROM customer_v0 v0
+            JOIN customer_v1 v1 USING (customer_key)
+            WHERE v0.segment <> v1.segment
+            UNION ALL
+            -- Current versions: latest value for every customer.
+            SELECT customer_key, segment,
+                   CASE WHEN customer_key % 7 = 0 THEN DATE '{V1_DATE}'
+                        ELSE DATE '{V0_DATE}' END AS valid_from,
+                   NULL AS valid_to,
+                   TRUE AS is_current
+            FROM customer_v1;
+        """
+    )
+    return con
+
+
+def scd2_stats() -> dict[str, int]:
+    """Summary counts a test can assert against."""
+    con = build_scd2()
+    total_customers = con.sql("SELECT COUNT(*) FROM dim_customer").fetchone()[0]
+    current_rows = con.sql("SELECT COUNT(*) FROM scd2_customer WHERE is_current").fetchone()[0]
+    versioned = con.sql(
+        "SELECT COUNT(*) FROM scd2_customer GROUP BY customer_key HAVING COUNT(*) = 2"
+    ).fetchall()
+    con.close()
+    return {
+        "customers": int(total_customers),
+        "current_rows": int(current_rows),
+        "customers_with_history": len(versioned),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# 3. Star vs snowflake
+# --------------------------------------------------------------------------- #
+def star_category_revenue() -> list[tuple[Any, ...]]:
+    """Revenue by product category from the denormalized (star) dimension."""
+    con = _connect()
+    rows = con.sql(
+        """
+        SELECT p.category, ROUND(SUM(f.sales_amount), 2) AS revenue
+        FROM fact_sales f
+        JOIN dim_product p ON f.product_key = p.product_key
+        GROUP BY p.category
+        ORDER BY p.category
+        """
+    ).fetchall()
+    con.close()
+    return rows
+
+
+def snowflake_category_revenue() -> list[tuple[Any, ...]]:
+    """Same revenue, but category lives in a normalized sub-dimension.
+
+    ``dim_product`` is split into ``product`` (key -> category_id) and a
+    ``category`` lookup, so the query needs an extra join.
+    """
+    con = _connect()
+    con.sql(
+        """
+        CREATE TABLE category AS
+            SELECT ROW_NUMBER() OVER (ORDER BY category) AS category_id, category
+            FROM (SELECT DISTINCT category FROM dim_product);
+
+        CREATE TABLE product_norm AS
+            SELECT p.product_key, c.category_id
+            FROM dim_product p JOIN category c ON p.category = c.category;
+        """
+    )
+    rows = con.sql(
+        """
+        SELECT c.category, ROUND(SUM(f.sales_amount), 2) AS revenue
+        FROM fact_sales f
+        JOIN product_norm p ON f.product_key = p.product_key
+        JOIN category c ON p.category_id = c.category_id
+        GROUP BY c.category
+        ORDER BY c.category
+        """
+    ).fetchall()
+    con.close()
+    return rows
+
+
+def main() -> None:
+    trap = fanout_trap()
+    print(
+        f"fan-out trap: true={trap['true_total']:.2f} "
+        f"inflated={trap['inflated_total']:.2f} "
+        f"(ratio {trap['inflated_total'] / trap['true_total']:.1f}x)"
+    )
+    stats = scd2_stats()
+    print(f"SCD2: {stats}")
+    star = star_category_revenue()
+    snow = snowflake_category_revenue()
+    print(f"star == snowflake revenue: {star == snow}")
+    for row in star:
+        print(row)
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="modules/05_warehousing/olap_analytics.py">
+"""Module 05 — OLAP aggregation patterns on the star schema (DuckDB).
+
+Makes the *dimensions vs measures* distinction concrete (the Tableau gap):
+``region`` / ``category`` are dimensions you group by; ``sales_amount`` is a
+measure you aggregate. All runnable over `make seed` Parquet, no Docker.
+
+1. **ROLLUP / GROUPING SETS** — hierarchical subtotals + grand total.
+2. **CUBE** — every combination of dimensions (the OLAP data cube, Gray 1997).
+3. **Window functions** — running total of revenue per region (rank/cumulative).
+4. **Materialized aggregate** — pre-compute a gold table once, query it cheaply.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+import duckdb
+
+from def_.common.io import parquet_paths
+
+
+def _connect() -> duckdb.DuckDBPyConnection:
+    paths = parquet_paths()
+    con = duckdb.connect()
+    con.sql(
+        f"""
+        CREATE VIEW fact_sales AS
+            SELECT * FROM read_parquet('{paths["fact_sales"]}/**/*.parquet');
+        CREATE VIEW dim_store AS
+            SELECT * FROM read_parquet('{paths["dim_store"]}/**/*.parquet');
+        CREATE VIEW dim_product AS
+            SELECT * FROM read_parquet('{paths["dim_product"]}/**/*.parquet');
+        CREATE VIEW sales_by_region_category AS
+            SELECT s.region, p.category, f.sales_amount
+            FROM fact_sales f
+            JOIN dim_store s ON f.store_key = s.store_key
+            JOIN dim_product p ON f.product_key = p.product_key;
+        """
+    )
+    return con
+
+
+def rollup_region_category() -> list[tuple[Any, ...]]:
+    """Subtotals per region, per (region, category), and a grand total.
+
+    ``GROUPING(region)`` = 1 marks the grand-total row; NULLs in dimension
+    columns mark subtotal rows.
+    """
+    con = _connect()
+    rows = con.sql(
+        """
+        SELECT region, category,
+               ROUND(SUM(sales_amount), 2) AS revenue,
+               GROUPING(region) AS g_region,
+               GROUPING(category) AS g_category
+        FROM sales_by_region_category
+        GROUP BY ROLLUP (region, category)
+        ORDER BY g_region, region NULLS LAST, g_category, category NULLS LAST
+        """
+    ).fetchall()
+    con.close()
+    return rows
+
+
+def cube_region_category() -> list[tuple[Any, ...]]:
+    """Every dimension combination: detail, per-region, per-category, total."""
+    con = _connect()
+    rows = con.sql(
+        """
+        SELECT region, category, ROUND(SUM(sales_amount), 2) AS revenue
+        FROM sales_by_region_category
+        GROUP BY CUBE (region, category)
+        ORDER BY region NULLS LAST, category NULLS LAST
+        """
+    ).fetchall()
+    con.close()
+    return rows
+
+
+def running_total_by_region() -> list[tuple[Any, ...]]:
+    """Window function: revenue per region plus a cumulative running total."""
+    con = _connect()
+    rows = con.sql(
+        """
+        WITH per_region AS (
+            SELECT region, ROUND(SUM(sales_amount), 2) AS revenue
+            FROM sales_by_region_category
+            GROUP BY region
+        )
+        SELECT region, revenue,
+               SUM(revenue) OVER (ORDER BY region
+                                  ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)
+                   AS running_total,
+               RANK() OVER (ORDER BY revenue DESC) AS revenue_rank
+        FROM per_region
+        ORDER BY region
+        """
+    ).fetchall()
+    con.close()
+    return rows
+
+
+def materialized_region_revenue() -> dict[str, int]:
+    """Pre-aggregate a gold table once, then serve queries from it.
+
+    The pattern behind a materialized view / gold layer: aggregate the large
+    fact table a single time, store the small result, query it repeatedly.
+    """
+    con = _connect()
+    con.sql(
+        """
+        CREATE TABLE gold_region_revenue AS
+            SELECT region, ROUND(SUM(sales_amount), 2) AS revenue, COUNT(*) AS line_count
+            FROM sales_by_region_category
+            GROUP BY region
+        """
+    )
+    gold_rows = con.sql("SELECT COUNT(*) FROM gold_region_revenue").fetchone()[0]
+    distinct_regions = con.sql("SELECT COUNT(DISTINCT region) FROM dim_store").fetchone()[0]
+    con.close()
+    return {"gold_rows": int(gold_rows), "distinct_regions": int(distinct_regions)}
+
+
+def main() -> None:
+    print("ROLLUP (region, category):")
+    for row in rollup_region_category():
+        print(row)
+    print("\nRunning total by region:")
+    for row in running_total_by_region():
+        print(row)
+    print(f"\nMaterialized gold: {materialized_region_revenue()}")
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="modules/05_warehousing/tests/test_dimensional_modeling.py">
+"""Prove-it tests for Module 05 — dimensional modeling."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pytest
+
+from def_.common.io import parquet_paths
+
+_MODULE_DIR = Path(__file__).resolve().parents[1]
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
+import dimensional_modeling as dm  # noqa: E402
+
+
+def _parquet_ready() -> bool:
+    paths = parquet_paths()
+    return bool(
+        list(paths["fact_sales"].glob("**/*.parquet"))
+        and list(paths["dim_customer"].glob("**/*.parquet"))
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def require_seed() -> None:
+    if not _parquet_ready():
+        pytest.skip("Parquet missing — run: make seed")
+
+
+def test_fanout_trap_doubles_measure() -> None:
+    trap = dm.fanout_trap()
+    # A 2x duplicated dimension exactly doubles the summed measure.
+    assert trap["inflated_total"] == pytest.approx(trap["true_total"] * 2, rel=1e-9)
+
+
+def test_scd2_keeps_one_current_row_per_customer() -> None:
+    stats = dm.scd2_stats()
+    assert stats["current_rows"] == stats["customers"]
+
+
+def test_scd2_versions_changed_customers() -> None:
+    stats = dm.scd2_stats()
+    # Every 7th customer rotates segment, so it gets a second (historical) row.
+    assert stats["customers_with_history"] == stats["customers"] // 7
+
+
+def test_star_and_snowflake_agree() -> None:
+    assert dm.star_category_revenue() == dm.snowflake_category_revenue()
+</file>
+
+<file path="modules/05_warehousing/tests/test_olap_analytics.py">
+"""Prove-it tests for Module 05 — OLAP aggregation patterns."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import pytest
+
+from def_.common.io import parquet_paths
+
+_MODULE_DIR = Path(__file__).resolve().parents[1]
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
+import olap_analytics as olap  # noqa: E402
+
+
+def _parquet_ready() -> bool:
+    paths = parquet_paths()
+    return bool(
+        list(paths["fact_sales"].glob("**/*.parquet"))
+        and list(paths["dim_store"].glob("**/*.parquet"))
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def require_seed() -> None:
+    if not _parquet_ready():
+        pytest.skip("Parquet missing — run: make seed")
+
+
+def test_rollup_has_grand_total_row() -> None:
+    rows = olap.rollup_region_category()
+    # Exactly one grand-total row: GROUPING(region)=1 and GROUPING(category)=1.
+    grand = [r for r in rows if r[3] == 1 and r[4] == 1]
+    assert len(grand) == 1
+
+
+def test_rollup_grand_total_equals_sum_of_details() -> None:
+    rows = olap.rollup_region_category()
+    grand_total = next(r[2] for r in rows if r[3] == 1 and r[4] == 1)
+    detail_sum = sum(r[2] for r in rows if r[3] == 0 and r[4] == 0)
+    assert grand_total == pytest.approx(detail_sum, rel=1e-6)
+
+
+def test_running_total_is_monotonic_and_ends_at_total() -> None:
+    rows = olap.running_total_by_region()
+    running = [r[2] for r in rows]
+    assert running == sorted(running)  # cumulative => non-decreasing
+    assert running[-1] == pytest.approx(sum(r[1] for r in rows), rel=1e-6)
+
+
+def test_materialized_gold_one_row_per_region() -> None:
+    stats = olap.materialized_region_revenue()
+    assert stats["gold_rows"] == stats["distinct_regions"]
+</file>
+
+<file path="modules/09_cloud_portability/concepts.md">
+# Cloud object storage & portability — concepts
+
+Paraphrased notes; cite sources as *Reis & Housley — Fundamentals of Data
+Engineering* and the cloud provider docs. Do not paste long vendor text.
+
+## Object storage vs HDFS
+
+- **HDFS** (module 04 lineage): blocks on data nodes, co-located with compute,
+  strong directory semantics, mutable appends. Scaling storage means scaling
+  the cluster.
+- **Object storage** (S3 / GCS / Blob): flat key→bytes namespace, storage fully
+  decoupled from compute, effectively infinite, cheap. "Directories" are a
+  prefix illusion. This decoupling is what makes the lakehouse (module 08) and
+  elastic Spark possible — spin compute up and down over the same bucket.
+
+## The three clouds, mapped
+
+| Concept | AWS | GCP | Azure |
+|---|---|---|---|
+| Object store | S3 | Cloud Storage (GCS) | Blob / ADLS Gen2 |
+| Bucket/container | bucket | bucket | container |
+| Identity | IAM | IAM | Entra ID + RBAC / SAS |
+| Managed Spark | EMR / Glue | Dataproc | Synapse / Databricks |
+| Warehouse | Redshift | BigQuery | Synapse / Fabric |
+| Catalog | Glue Data Catalog | Dataplex | Unity Catalog / Purview |
+
+## Where the abstraction leaks
+
+A single `fsspec` interface hides most differences, but a senior engineer knows
+the seams:
+
+1. **Consistency** — all three are now strongly read-after-write consistent for
+   new objects, but listing and overwrite semantics still differ in latency.
+2. **IAM models** — AWS IAM policies, GCP IAM bindings, and Azure RBAC + SAS
+   tokens are *not* interchangeable; portability stops at the auth boundary.
+3. **Hierarchical namespace** — ADLS Gen2 has real directories (atomic rename);
+   plain S3/GCS do not, which changes how table formats commit.
+4. **Egress cost** — reads inside a region are cheap; cross-region/cross-cloud
+   egress is the silent budget killer behind "just replicate it."
+5. **Table formats** — Delta and Iceberg (module 08) commit via a log/manifest
+   precisely to get atomicity *on top of* eventually-listed object stores.
+
+## Why emulators (and their limits)
+
+LocalStack, fake-gcs-server, and Azurite reproduce the API surface so jobs run
+unchanged with zero spend and zero credentials — ideal for learning and CI. They
+do **not** reproduce IAM enforcement, regional latency, throttling, or egress
+cost. Treat green emulator tests as "the code path works," not "this is
+production-ready on that cloud."
+</file>
+
+<file path="modules/09_cloud_portability/object_store_roundtrip.py">
+"""Module 09 — write/read a gold table to emulated S3 / GCS / Azure Blob.
+
+One code path, three clouds: the cloud is chosen by ``--cloud`` and everything
+below goes through the fsspec abstraction in ``def_.common.storage``. Targets
+local emulators (LocalStack / fake-gcs-server / Azurite) — no real cloud, no spend.
+
+    uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud aws
+    uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud gcp
+    uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud azure
+"""
+
+from __future__ import annotations
+
+import argparse
+import io
+
+import duckdb
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+from def_.common.io import parquet_paths
+from def_.common.logging import get_logger
+from def_.common.storage import Cloud, get_filesystem
+
+logger = get_logger(__name__)
+
+BUCKET = "def-gold"
+OBJECT_KEY = "region_revenue.parquet"
+
+
+def build_gold_table() -> pa.Table:
+    """Aggregate region revenue from the seeded star schema (DuckDB → Arrow)."""
+    paths = parquet_paths()
+    con = duckdb.connect()
+    table = con.sql(
+        f"""
+        SELECT s.region, ROUND(SUM(f.sales_amount), 2) AS revenue
+        FROM read_parquet('{paths["fact_sales"]}/**/*.parquet') f
+        JOIN read_parquet('{paths["dim_store"]}/**/*.parquet') s
+          ON f.store_key = s.store_key
+        GROUP BY s.region
+        ORDER BY s.region
+        """
+    ).to_arrow_table()
+    con.close()
+    return table
+
+
+_EXISTS_MARKERS = ("exist", "conflict", "alreadyown", "409")
+
+
+def _ensure_bucket(fs: object, bucket: str) -> None:
+    # mkdir creates a bucket (s3fs/gcsfs) or container (adlfs); note makedirs does
+    # NOT create an Azure container. Backends signal "already there" differently
+    # (FileExistsError, 409 Conflict, BucketAlreadyOwnedByYou), so we treat any
+    # existence error as success and re-raise anything else.
+    try:
+        fs.mkdir(bucket)  # type: ignore[attr-defined]
+    except FileExistsError:
+        logger.info("bucket %s already exists", bucket)
+    except Exception as exc:  # noqa: BLE001 - normalize cross-backend "exists"
+        if not any(marker in str(exc).lower() for marker in _EXISTS_MARKERS):
+            raise
+        logger.info("bucket %s already exists", bucket)
+    if hasattr(fs, "invalidate_cache"):
+        fs.invalidate_cache()  # type: ignore[attr-defined]
+
+
+def roundtrip(cloud: Cloud, bucket: str = BUCKET) -> int:
+    """Write the gold table to object storage and read it back; return row count."""
+    table = build_gold_table()
+    fs = get_filesystem(cloud)
+    _ensure_bucket(fs, bucket)
+
+    remote_path = f"{bucket}/{OBJECT_KEY}"
+    buf = io.BytesIO()
+    pq.write_table(table, buf)  # type: ignore[no-untyped-call]
+    with fs.open(remote_path, "wb") as handle:  # type: ignore[attr-defined]
+        handle.write(buf.getvalue())
+    logger.info("wrote %s://%s (%d rows)", cloud, remote_path, table.num_rows)
+
+    with fs.open(remote_path, "rb") as handle:  # type: ignore[attr-defined]
+        round_tripped = pq.read_table(handle)  # type: ignore[no-untyped-call]
+    logger.info("read back %d rows from %s", round_tripped.num_rows, cloud)
+    return int(round_tripped.num_rows)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Object-store roundtrip across clouds")
+    parser.add_argument("--cloud", choices=["aws", "gcp", "azure"], required=True)
+    parser.add_argument("--bucket", default=BUCKET)
+    args = parser.parse_args()
+    rows = roundtrip(args.cloud, args.bucket)
+    print(f"cloud={args.cloud} rows_roundtripped={rows}")
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="modules/09_cloud_portability/README.md">
+# Module 09 — Cloud Object Storage & Portability (AWS · GCP · Azure)
+
+**Status:** built · **Covers:** the cloud layer. Most data-engineering roles assume
+at least one cloud, but the rest of this repo is deliberately local. This module
+teaches the **portable layer** — object storage and a single storage abstraction —
+for all three major clouds **without spend or credentials**, using local emulators
+that honor the repo's "local Docker only" rule.
+
+## The idea
+
+A data engineer writes against *one* storage interface and swaps clouds by
+**configuration, not code**. `src/def_/common/storage.py` returns an
+[`fsspec`](https://filesystem-spec.readthedocs.io/) filesystem for `aws`, `gcp`,
+or `azure`; the same `object_store_roundtrip.py` job writes and reads a gold
+Parquet table to whichever you pick.
+
+| Cloud | Service | Emulator | Endpoint | fsspec backend |
+|---|---|---|---|---|
+| `aws` | S3 | LocalStack | `http://localhost:4566` | `s3fs` |
+| `gcp` | Cloud Storage | fake-gcs-server | `http://localhost:4443` | `gcsfs` |
+| `azure` | Blob / ADLS Gen2 | Azurite | `http://localhost:10000` | `adlfs` |
+
+## What's in this folder
+
+- `object_store_roundtrip.py` — write/read a region-revenue gold table to a cloud
+- `concepts.md` — object storage vs HDFS, IAM, egress, table formats across clouds
+- `tests/test_cloud_storage.py` — offline config tests + `-m cloud` roundtrip tests
+
+## Infrastructure
+
+Docker emulator services in [`infra/docker-compose.yml`](../../infra/docker-compose.yml):
+`localstack`, `fake-gcs`, `azurite`. They are in the optional `cloud` Compose
+profile, so plain `make up` does **not** start them.
+
+## Setup
+
+Install the optional cloud backends once:
+
+```bash
+uv sync --extra cloud      # adds fsspec, s3fs, gcsfs, adlfs
+```
+
+## Run
+
+**WSL / macOS / Linux:**
+
+```bash
+make seed
+make up-cloud                                  # start the three emulators
+uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud aws
+uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud gcp
+uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud azure
+uv run pytest modules/09_cloud_portability/tests -m cloud
+make down-cloud
+```
+
+**Windows (native)** — see [`docs/setup.md`](../../docs/setup.md):
+
+```powershell
+.\tasks.ps1 seed
+.\tasks.ps1 up-cloud
+.\.venv\Scripts\python.exe modules\09_cloud_portability\object_store_roundtrip.py --cloud aws
+.\tasks.ps1 test-cloud
+.\tasks.ps1 down-cloud
+```
+
+The **offline** config tests need no Docker and run with the normal suite:
+
+```bash
+uv run pytest modules/09_cloud_portability/tests
+```
+
+## Prove-it exercises
+
+1. **One interface, three clouds** — run the roundtrip against `aws`, `gcp`, and
+   `azure`. Acceptance: each prints `rows_roundtripped=4` (one row per region)
+   with no change to the job code.
+2. **Config, not code** — `storage_config()` returns the right endpoint per cloud
+   and rejects unknown clouds. Acceptance: offline tests pass.
+3. **Portability write-up** — extend `concepts.md`: where does the abstraction
+   leak (consistency, IAM, ADLS hierarchical namespace, egress cost)?
+
+## Further reading
+
+[`docs/curriculum.md` — Repo module 09](../../docs/curriculum.md#repo-module-09--cloud--object-storage-portability)
+</file>
+
+<file path="modules/09_cloud_portability/tests/test_cloud_storage.py">
+"""Prove-it tests for Module 09 — cloud object-storage portability.
+
+The config-builder tests run offline (no Docker, no backends). The roundtrip
+tests are marked ``cloud`` and skip unless the corresponding emulator is up
+(`make up-cloud`) and the optional backend is installed.
+"""
+
+from __future__ import annotations
+
+import socket
+import sys
+from pathlib import Path
+from urllib.parse import urlparse
+
+import pytest
+
+from def_.common import storage
+
+_MODULE_DIR = Path(__file__).resolve().parents[1]
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
+
+# --------------------------------------------------------------------------- #
+# Offline: the config builder is pure and always testable.
+# --------------------------------------------------------------------------- #
+@pytest.mark.parametrize("cloud", storage.CLOUDS)
+def test_storage_config_has_endpoint(cloud: storage.Cloud) -> None:
+    cfg = storage.storage_config(cloud)
+    assert cfg["endpoint"].startswith("http")
+    assert isinstance(cfg["kwargs"], dict)
+
+
+def test_storage_config_rejects_unknown_cloud() -> None:
+    with pytest.raises(ValueError, match="unknown cloud"):
+        storage.storage_config("oracle")  # type: ignore[arg-type]
+
+
+def test_azurite_connection_string_uses_dev_account() -> None:
+    conn = storage.azurite_connection_string()
+    assert "AccountName=devstoreaccount1" in conn
+    assert "BlobEndpoint=" in conn
+
+
+# --------------------------------------------------------------------------- #
+# Integration: requires the emulator + backend. Skips cleanly otherwise.
+# --------------------------------------------------------------------------- #
+def _reachable(endpoint: str) -> bool:
+    parsed = urlparse(endpoint)
+    host = parsed.hostname or "localhost"
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    try:
+        with socket.create_connection((host, port), timeout=2):
+            return True
+    except OSError:
+        return False
+
+
+@pytest.mark.cloud
+@pytest.mark.parametrize("cloud", storage.CLOUDS)
+def test_object_store_roundtrip(cloud: storage.Cloud) -> None:
+    cfg = storage.storage_config(cloud)
+    if not _reachable(cfg["endpoint"]):
+        pytest.skip(f"{cloud} emulator not reachable at {cfg['endpoint']} — run: make up-cloud")
+    pytest.importorskip(
+        {"aws": "s3fs", "gcp": "gcsfs", "azure": "adlfs"}[cloud],
+        reason="cloud backend not installed — run: uv sync --extra cloud",
+    )
+    import object_store_roundtrip as job  # noqa: E402
+
+    rows = job.roundtrip(cloud, bucket=f"def-test-{cloud}")
+    assert rows == 4  # one row per region
+</file>
+
+<file path="src/def_/common/storage.py">
+"""Multi-cloud object-storage abstraction (AWS / GCP / Azure) via fsspec.
+
+The teaching point of Module 09: a data engineer writes against *one* storage
+interface and swaps clouds by configuration, not code. We target three **local
+emulators** so the repo keeps its "local Docker only — no cloud APIs, no spend,
+no credentials" rule while still exercising real S3/Blob/GCS client paths:
+
+| Cloud   | Service           | Emulator         | Default endpoint        |
+|---------|-------------------|------------------|-------------------------|
+| ``aws`` | S3                | LocalStack       | http://localhost:4566   |
+| ``gcp`` | Cloud Storage     | fake-gcs-server  | http://localhost:4443   |
+| ``azure`` | Blob / ADLS Gen2 | Azurite          | http://localhost:10000  |
+
+Backends (``s3fs``, ``gcsfs``, ``adlfs``) are in the optional ``cloud`` group and
+imported lazily, so the base install and ``mypy`` do not require them.
+"""
+
+from __future__ import annotations
+
+import os
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    from fsspec import AbstractFileSystem
+
+Cloud = Literal["aws", "gcp", "azure"]
+CLOUDS: tuple[Cloud, ...] = ("aws", "gcp", "azure")
+
+# Azurite ships a fixed well-known development account. Safe to commit: it only
+# ever authenticates against the local emulator, never a real Azure account.
+AZURITE_ACCOUNT = "devstoreaccount1"
+AZURITE_KEY = (
+    "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+)
+
+
+def _endpoint(cloud: Cloud) -> str:
+    return {
+        "aws": os.environ.get("AWS_ENDPOINT_URL", "http://localhost:4566"),
+        "gcp": os.environ.get("GCS_ENDPOINT_URL", "http://localhost:4443"),
+        "azure": os.environ.get("AZURITE_BLOB_URL", "http://127.0.0.1:10000"),
+    }[cloud]
+
+
+def azurite_connection_string() -> str:
+    blob_endpoint = f"{_endpoint('azure')}/{AZURITE_ACCOUNT}"
+    return (
+        "DefaultEndpointsProtocol=http;"
+        f"AccountName={AZURITE_ACCOUNT};"
+        f"AccountKey={AZURITE_KEY};"
+        f"BlobEndpoint={blob_endpoint};"
+    )
+
+
+def storage_config(cloud: Cloud) -> dict[str, Any]:
+    """Return the connection settings for a cloud's emulator (pure / testable).
+
+    No network or imports happen here, so this is unit-tested offline.
+    """
+    if cloud not in CLOUDS:
+        raise ValueError(f"unknown cloud {cloud!r}; expected one of {CLOUDS}")
+    endpoint = _endpoint(cloud)
+    if cloud == "aws":
+        # Note: we deliberately do NOT pass region_name. s3fs would then send a
+        # CreateBucketConfiguration/LocationConstraint that LocalStack rejects for
+        # the us-east-1 default ("InvalidLocationConstraint"). Omitting it keeps
+        # bucket creation working against the emulator.
+        return {
+            "endpoint": endpoint,
+            "kwargs": {
+                "key": os.environ.get("AWS_ACCESS_KEY_ID", "test"),
+                "secret": os.environ.get("AWS_SECRET_ACCESS_KEY", "test"),
+                "client_kwargs": {"endpoint_url": endpoint},
+            },
+        }
+    if cloud == "gcp":
+        return {
+            "endpoint": endpoint,
+            "kwargs": {
+                "project": os.environ.get("GCP_PROJECT", "def-local"),
+                "token": "anon",
+                "endpoint_url": endpoint,
+            },
+        }
+    return {
+        "endpoint": endpoint,
+        "kwargs": {"connection_string": azurite_connection_string()},
+    }
+
+
+def get_filesystem(cloud: Cloud) -> AbstractFileSystem:
+    """Build an fsspec filesystem pointed at the local emulator for ``cloud``.
+
+    Lazily imports the backend so a missing optional dependency raises a clear,
+    actionable error instead of failing at module import time.
+    """
+    cfg = storage_config(cloud)
+    try:
+        if cloud == "aws":
+            import s3fs
+
+            return s3fs.S3FileSystem(**cfg["kwargs"])
+        if cloud == "gcp":
+            # fake-gcs-server also honors this env var for client libraries.
+            os.environ.setdefault("STORAGE_EMULATOR_HOST", cfg["endpoint"])
+            import gcsfs
+
+            return gcsfs.GCSFileSystem(**cfg["kwargs"])
+        import adlfs
+
+        return adlfs.AzureBlobFileSystem(**cfg["kwargs"])
+    except ImportError as exc:  # pragma: no cover - exercised only without extras
+        raise ImportError(
+            f"cloud backend for {cloud!r} not installed. "
+            "Install the optional extras: `uv sync --extra cloud`"
+        ) from exc
+</file>
+
+<file path="tasks.ps1">
+<#
+.SYNOPSIS
+    Native-Windows task runner — a PowerShell mirror of the Makefile for hosts
+    without WSL. Run from the repo root, e.g.  .\tasks.ps1 seed
+
+.DESCRIPTION
+    Uses the project virtualenv at .\.venv directly (no `make`, no WSL).
+    Docker targets require Docker Desktop to be running.
+#>
+[CmdletBinding()]
+param(
+    [Parameter(Position = 0)]
+    [ValidateSet('setup', 'up', 'down', 'up-cloud', 'down-cloud', 'seed', 'seed-large',
+        'load-sql', 'lint', 'typecheck', 'test', 'test-cloud', 'check', 'spark-submit',
+        'oom-lab', 'help')]
+    [string]$Task = 'help',
+
+    [Parameter(Position = 1)]
+    [string]$Job
+)
+
+$ErrorActionPreference = 'Stop'
+$Root = $PSScriptRoot
+$Py = Join-Path $Root '.venv\Scripts\python.exe'
+$Compose = @('compose', '-f', (Join-Path $Root 'infra\docker-compose.yml'))
+$env:PYTHONPATH = 'src;.'
+
+if (-not (Test-Path $Py)) {
+    Write-Warning "venv not found at $Py — run '.\tasks.ps1 setup' first."
+}
+
+function Invoke-Py { & $Py @args; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE } }
+
+switch ($Task) {
+    'setup' {
+        $uv = Get-Command uv -ErrorAction SilentlyContinue
+        if ($uv) { & uv sync --all-groups }
+        else {
+            Write-Host "uv not found; using pip into .venv"
+            & $Py -m pip install -e '.[dev]'
+        }
+    }
+    'up'         { & docker @Compose up -d postgres spark-master spark-worker-1 spark-worker-2 kafka }
+    'down'       { & docker @Compose down }
+    'up-cloud'   { & docker @Compose --profile cloud up -d localstack fake-gcs azurite }
+    'down-cloud' { & docker @Compose --profile cloud down }
+    'seed'       { Invoke-Py -m def_.datagen.cli --scale-gb 0.01 }
+    'seed-large' { Invoke-Py -m def_.datagen.cli --scale-gb 1.0 }
+    'load-sql'   { Invoke-Py modules\02_sql_relational\load_to_postgres.py }
+    'lint' {
+        Invoke-Py -m ruff check src modules tests
+        Invoke-Py -m ruff format --check src modules tests
+    }
+    'typecheck'  { Invoke-Py -m mypy }
+    'test' {
+        Invoke-Py -m pytest -m 'not spark and not kafka and not cloud' `
+            --ignore=modules/04_spark_internals/tests `
+            --ignore=modules/06_streaming_kafka/tests
+    }
+    'test-cloud' { Invoke-Py -m pytest modules/09_cloud_portability/tests -m cloud }
+    'check' {
+        & $PSCommandPath lint
+        & $PSCommandPath typecheck
+        & $PSCommandPath test
+    }
+    'spark-submit' {
+        if (-not $Job) { Write-Error "Usage: .\tasks.ps1 spark-submit modules/04_spark_internals/join_aggregate_job.py"; exit 1 }
+        & docker @Compose exec -T -e PYTHONPATH=/workspace/src spark-master spark-submit `
+            --master spark://spark-master:7077 --deploy-mode client `
+            --conf spark.driver.host=spark-master --conf spark.driver.bindAddress=0.0.0.0 `
+            "/workspace/$Job"
+    }
+    'oom-lab' {
+        & $PSCommandPath spark-submit 'modules/04_spark_internals/oom_exercise.py'
+    }
+    default {
+        Write-Host "Tasks: setup up down up-cloud down-cloud seed seed-large load-sql lint typecheck test test-cloud check spark-submit <job> oom-lab"
+    }
+}
 </file>
 
 <file path=".cursor/rules/10-python.mdc">
@@ -141,6 +1152,21 @@ SPARK_MASTER_URL=spark://localhost:7077
 SPARK_MASTER_WEB_UI=http://localhost:8080
 
 KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+
+# Module 09 — local cloud emulators (LocalStack / fake-gcs-server / Azurite).
+# Defaults match infra/docker-compose.yml; no real cloud credentials needed.
+AWS_ENDPOINT_URL=http://localhost:4566
+AWS_ACCESS_KEY_ID=test
+AWS_SECRET_ACCESS_KEY=test
+AWS_REGION=us-east-1
+GCS_ENDPOINT_URL=http://localhost:4443
+GCP_PROJECT=def-local
+AZURITE_BLOB_URL=http://127.0.0.1:10000
+</file>
+
+<file path=".gitattributes">
+# Auto detect text files and perform LF normalization
+* text=auto
 </file>
 
 <file path=".pre-commit-config.yaml">
@@ -161,68 +1187,442 @@ repos:
         files: ^src/def_/
 </file>
 
-<file path="CLAUDE.md">
-# Data Engineering Foundations
+<file path="docs/curriculum.md">
+# Foundations of Big Data Engineering — A 0 → Senior Curriculum
 
-Hands-on repo closing the gap between governance/medallion fluency and **systems internals** (Spark cluster model, SQL foundations, tuning). Graded artifacts are **runnable jobs + passing tests**, not notebooks.
+*A competency-mapped course design with tiered reading lists (canonical textbooks → cited academic literature → industry/practitioner sources). It takes a learner from **zero** — never having heard of data engineering — to the point of performing the role at a **senior level**, by forcing the systems-internals layer beneath each tool to the surface and grading every unit on a runnable artifact.*
 
-## Commands (run from WSL at repo root)
+Hands-on labs in this repository: [`docs/modules.md`](modules.md) · setup: [`docs/setup.md`](setup.md).
 
-| Command | Purpose |
-|---------|---------|
-| `make setup` | `uv sync` + pre-commit hooks |
-| `make up` / `make down` | Docker: Spark (1 master, 2 workers), Postgres 16, Kafka KRaft |
-| `make seed` | Generate star-schema Parquet (~0.01 GB) |
-| `make seed-large` | ~1 GB for shuffle/OOM labs |
-| `make load-sql` | Load Parquet into Postgres + apply SQL |
-| `make spark-submit JOB=path/to/job.py` | Submit to **standalone cluster** (not `local[*]`) |
-| `make oom-lab` | Module 04 OOM exercise (expect failure) |
-| `make sql` | psql shell |
-| `make lint` / `make typecheck` / `make test` | Quality gates |
-| `make check` | lint + typecheck + test |
+---
 
-## Stack
+## Who this is for and how to use it
 
-- Python 3.12, **uv**, package `def_` under `src/def_/`
-- **ruff**, **mypy** (strict on `src/def_/`), **pytest**
-- Local Docker only — no cloud APIs
-- **duckdb** for future warehousing module; **PySpark** on Bitnami Spark 3.5 cluster
+- **Complete beginners** — start at Tier A (modules 01–03) and work strictly in order; do every lab.
+- **Working analysts / data scientists** moving toward data engineering — skim Tier A for gaps, invest in Tier B (the Spark/warehousing/streaming core).
+- **Engineers targeting senior big-data roles** — the keystone is module 04 (Spark internals); Tier C is the architecture/research extension.
 
-## Layout
+**What "data engineering" means here:** building the systems that move, store, transform, and serve data reliably and at scale — the relational and dimensional models beneath analytics, the distributed execution model beneath Spark, the streaming and lakehouse patterns beneath modern platforms, and the governance that keeps it trustworthy. This curriculum teaches each of those from first principles, not as recipes.
 
-- `src/def_/common/` — Spark session builder, Postgres DSN, paths (cluster-first)
-- `src/def_/datagen/` — Kimball-style retail star schema, `--scale-gb`
-- `modules/NN_*/` — learning units; exercises + tests in-module
-- `references/` — **gitignored** local textbook corpus; never commit
-- `data/` — **gitignored** generated Parquet and explain artifacts
+---
 
-## Principles
+## Repo alignment (modules 01–09)
 
-1. **Real cluster over notebooks** — Spark jobs via `spark-submit` against `spark://localhost:7077`; inspect UI :8080 (cluster) and :4040 (app).
-2. **Prove it** — Every exercise has pytest acceptance criteria; stubs use `skip`.
-3. **Typed `src/`** — Fully annotated; `make typecheck` must pass before done.
-4. **Copyright** — Paraphrase concepts in READMEs; cite as *Book — Chapter N*; never paste long verbatim text from `references/`.
+This repo implements numbered folders under `modules/`. Curriculum sections below retain original numbering where noted.
 
-## Spark session
+- **Repo 01** [`01_python_model`](../modules/01_python_model/) — Python language model (curriculum Module 1)
+- **DSA** — Data structures & algorithms (curriculum Module 2) — **separate repository**; study in parallel with repo 02
+- **Repo 02** [`02_sql_relational`](../modules/02_sql_relational/) — SQL (curriculum Module 3)
+- **Repo 03** [`03_bi_tools`](../modules/03_bi_tools/) — BI tools (split from curriculum Module 5)
+- **Repo 04** [`04_spark_internals`](../modules/04_spark_internals/) — Spark internals (curriculum Module 4)
+- **Repo 05** [`05_warehousing`](../modules/05_warehousing/) — Warehousing / Kimball (curriculum Module 5, warehousing only)
+- **Repo 06** [`06_streaming_kafka`](../modules/06_streaming_kafka/) — Kafka (curriculum Module 6)
+- **Repo 07** [`07_ai_assisted_dev`](../modules/07_ai_assisted_dev/) — AI-assisted engineering (curriculum Module 8)
+- **Repo 08** [`08_lakehouse_medallion`](../modules/08_lakehouse_medallion/) — Lakehouse, Delta, medallion (reframes curriculum Module 9 capstone; portable concepts, not a vendor course)
+- **Repo 09** [`09_cloud_portability`](../modules/09_cloud_portability/) — Cloud object storage & portability across AWS/GCP/Azure via local emulators (cross-cutting)
+- **Curriculum Module 7** (Java OOP / design patterns) — optional; for roles requiring a JVM/J2EE stack; not a repo folder
 
-Use `def_.common.spark.build_spark_session(name, cluster=True)` for graded jobs. Do not default to `local[*]` except isolated unit tests.
+Optional local textbook extracts: `references/` (gitignored). Do not commit long verbatim paste from publishers.
 
-## Environment
+---
 
-Copy `.env.example` → `.env`. Defaults match `docker-compose.yml` (`def_user` / `def_learning`).
+## 1. Design principles
 
-## Module status (first pass)
+Most people enter data engineering through a tool — a notebook, a DataFrame API, a BI canvas — and learn the surface without the layer beneath it. That layer is exactly what senior interviews probe and what production failures expose. Two principles follow.
 
-- **Built:** 03 SQL, 04 Spark, datagen, infra, agent files
-- **Stub:** 01, 02, 05, 06, 07, 09
+1. **Teach the internals first.** Every module forces the layer beneath the API to the surface — the data model beneath Python syntax, the execution model beneath the DataFrame, the relational algebra beneath SQL, the storage/compute decoupling beneath the cloud. Tools change; these models do not.
+2. **Calibrate against the machine, not against confidence.** Assessment is performance-based (debug a real OOM, read a physical plan, prove a loop invariant, write a recursive CTE) rather than recall-based, so self-assessed skill tracks demonstrated skill.
 
-## UIs
+### The competencies that separate notebook-level from senior-level
 
-- Spark master: http://localhost:8080
-- Spark application: http://localhost:4040 (while a job runs)
+These are the concepts that most reliably distinguish someone who *uses* the tools from someone who *understands the system*. Each maps to a module below.
+
+- **Python language model** — mutability/immutability, the built-in data structures and their methods, the `array`/`list`/`ndarray` distinction, dunder methods (`__init__`, `__new__`, `__call__`, `__hash__`, `__eq__`), and OOP vs. procedural vs. scripting as language paradigms.
+- **Spark internals** — the `spark-submit` lifecycle (driver, executors, DAG, logical→physical plan, Catalyst, jobs/stages/tasks, cluster managers), diagnosing executor *and* driver OOM, partitioning, skew, shuffle, and tuning beyond toy data sizes. The common failure mode is a notebook-local mental model rather than a cluster-distributed one.
+- **Relational databases / SQL** — VIEWs, CTEs / the `WITH` clause, temporary vs. virtual tables, and cost-based query tuning with `EXPLAIN`.
+- **Dimensional modeling / BI** — dimensions vs. measures (Kimball / Tableau), facts vs. dimensions, star vs. snowflake, slowly changing dimensions, and the lakehouse framing.
+- **Algorithms / DSA** — loop invariants, indexing arithmetic, complexity reasoning, and decomposing a problem before writing code.
+- **AI-assisted development** — using agentic coding tools effectively, and the purpose of a `CLAUDE.md`-style project memory file in conserving context and tokens.
+
+---
+
+## Repo module 01 — Python language model
+
+## Module 1 — The Python Language Model & Object Orientation
+**Level:** Tier A → B · **Covers:** mutability/immutability, built-in data structures, dunder methods, OOP vs. procedural vs. scripting, and building accurate self-calibration.
+
+### Tier 1 — Primary textbooks
+- **Luciano Ramalho, *Fluent Python*, 2nd ed. (O'Reilly, 2022).** The definitive treatment of the Python data model — mutable vs. immutable sequences, hashability, and the special ("dunder") methods (`__init__`, `__new__`, `__call__`, `__hash__`, `__eq__`). This single book closes nearly every Python fundamentals gap.
+- **David Beazley, *Python Distilled* (Addison-Wesley, 2021).** Concise, rigorous coverage of objects, the type system, and execution model.
+- **Brett Slatkin, *Effective Python*, 2nd ed. (Addison-Wesley, 2019).** 90 idioms that build correct mental models; pairs well with calibration-focused assessment.
+
+### Tier 2 — Academic / foundational
+- **Robert W. Sebesta, *Concepts of Programming Languages*, 11th+ ed. (Pearson).** Grounds the paradigm question — what *imperative/procedural*, *object-oriented*, and *scripting* actually mean as language paradigms, language-agnostically.
+- **Abelson, Sussman & Sussman, *Structure and Interpretation of Computer Programs*, 2nd ed. (MIT Press, 1996; free online).** First-principles treatment of state, mutation, and abstraction — directly addresses *why* mutability matters, not just which types are mutable.
+
+### Tier 3 — Industry / official
+- **The Python Language Reference — "Data Model"** (docs.python.org). The *primary source* for special methods and the mutable/immutable distinction.
+- **CPython `array`, `collections`, `dataclasses` module docs.** Settles the "does Python have an array?" question (yes — the `array` module and, in practice, `list`/NumPy `ndarray`).
+- **Anthony Shaw, *CPython Internals* (Real Python, 2021).** How objects, reference counting, and immutability are implemented under the interpreter.
+
+---
+
+## External — DSA (parallel with repo 02 SQL)
+
+## Module 2 — Data Structures, Algorithms & Problem Decomposition
+**Level:** Tier A · **Covers:** loop invariants, indexing arithmetic, complexity reasoning, and decomposing a problem before coding (e.g. deriving a relation like `2·row − 1` for a pattern before writing the loop).
+
+### Tier 1 — Primary textbooks
+- **Cormen, Leiserson, Rivest & Stein (CLRS), *Introduction to Algorithms*, 4th ed. (MIT Press, 2022).** The canonical reference; the loop-invariant methodology in Ch. 2 is the core technique for reasoning about correctness.
+- **Steven Skiena, *The Algorithm Design Manual*, 3rd ed. (Springer, 2020).** The most *practical* DSA text — strong on how to reason toward a solution under time pressure.
+- **Sedgewick & Wayne, *Algorithms*, 4th ed. (Addison-Wesley, 2011).** Excellent implementations and empirical complexity analysis.
+
+### Tier 2 — Academic / foundational
+- **George Pólya, *How to Solve It* (Princeton, 1945; still in print).** Problem-decomposition heuristics — the antidote to jumping to code before establishing the invariant.
+- **Knuth, *The Art of Computer Programming*, Vols. 1–3 (Addison-Wesley).** Reference-grade rigor for complexity and combinatorial reasoning.
+
+### Tier 3 — Industry / practice
+- **NeetCode / LeetCode patterns, and *Cracking the Coding Interview* (McDowell, 6th ed.).** Deliberate practice on the standard interview format.
+- **Python `timeit` / `cProfile` docs.** Make Big-O reasoning empirical, reinforcing calibration.
+
+---
+
+## Repo module 02 — SQL
+
+## Module 3 — Relational Databases, SQL & Query Optimization
+**Level:** Tier A → C · **Covers:** views, CTEs/`WITH`, temporary vs. virtual tables, and cost-based query tuning.
+
+### Tier 1 — Primary textbooks
+- **Silberschatz, Korth & Sudarshan, *Database System Concepts*, 7th ed. (McGraw-Hill, 2019).** Covers the relational model, **views**, **recursive CTEs**, and the relational algebra beneath SQL.
+- **Garcia-Molina, Ullman & Widom, *Database Systems: The Complete Book*, 2nd ed. (Pearson, 2008).** The "Stanford" book; outstanding on query processing and optimization.
+- **Ramakrishnan & Gehrke, *Database Management Systems*, 3rd ed. (McGraw-Hill, 2003).** Strong systems-level treatment.
+
+### Tier 2 — Academic / foundational
+- **E. F. Codd, "A Relational Model of Data for Large Shared Data Banks," *Communications of the ACM* 13(6), 1970.** The founding paper of the entire field; defines what a *view* is in principle.
+- **Selinger et al., "Access Path Selection in a Relational Database Management System," *SIGMOD* 1979.** The System R cost-based optimizer — the theoretical basis of modern query tuning.
+- **Chamberlin & Boyce, "SEQUEL: A Structured English Query Language," *SIGMOD* 1974.** Origin of SQL itself.
+
+### Tier 3 — Industry / official
+- **PostgreSQL documentation — "WITH Queries (CTEs)," "CREATE VIEW," and "Using EXPLAIN."** Authoritative, free, and the engine used by this repo's labs.
+- **Markus Winand, *Use The Index, Luke!* (use-the-index-luke.com) and *SQL Performance Explained*.** The best practitioner resource on indexing and tuning.
+- **Oracle Database SQL Language Reference — views, CTEs (`WITH`), materialized views.** A common enterprise dialect for comparison.
+
+---
+
+## Repo module 04 — Spark internals
+
+## Module 4 — Distributed Systems & Apache Spark Internals  *(the keystone module)*
+**Level:** Tier B → C · **Covers:** the single largest and most role-critical area — driver/executor architecture, the `spark-submit` lifecycle, DAG → jobs/stages/tasks, logical→physical plans, the Catalyst optimizer, cluster managers, executor *and* driver OOM, partitioning, skew, shuffle, and tuning at real scale.
+
+### Tier 1 — Primary textbooks
+- **Martin Kleppmann & Chris Riccomini, *Designing Data-Intensive Applications*, 2nd ed. (O'Reilly, Feb 2026).** The single best book for the *why* beneath distributed data systems — partitioning, replication, batch vs. stream, fault tolerance. Thoroughly revised from the 2017 first edition (~650 pages).
+- **Holden Karau & Rachel Warren, *High Performance Spark*, 2nd ed. (O'Reilly, updated for Apache Spark 4).** Deep dives into the DAG scheduler, task execution, memory management, partitioning, and shuffle — i.e., *exactly* how to diagnose executor/driver OOM and a multi-hour job. The most targeted text for Spark performance.
+- **Damji, Wenig, Das & Lee, *Learning Spark*, 2nd ed. (O'Reilly/Databricks, 2020)** and **Chambers & Zaharia, *Spark: The Definitive Guide* (O'Reilly, 2018).** The execution model, Structured APIs, and the driver/executor cluster picture.
+- **Tanenbaum & Van Steen, *Distributed Systems*, 4th ed. (2023; free PDF at distributed-systems.net).** The general distributed-systems foundation under all of the above.
+
+### Tier 2 — Academic literature (the canon)
+- **Dean & Ghemawat, "MapReduce: Simplified Data Processing on Large Clusters," *OSDI* 2004.** The origin of the whole batch-processing lineage.
+- **Zaharia et al., "Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing," *NSDI* 2012.** *The* Spark paper — defines RDDs, lineage, and the driver/executor model. Required reading for anyone working in PySpark.
+- **Armbrust et al., "Spark SQL: Relational Data Processing in Spark," *SIGMOD* 2015.** Defines the **Catalyst optimizer** and the logical→physical plan pipeline.
+- **Ghemawat, Gobioff & Leung, "The Google File System," *SOSP* 2003.** The ancestor of HDFS.
+- **Dean & Barroso, "The Tail at Scale," *CACM* 2013.** Builds latency-and-scale intuition (gigabytes vs. terabytes).
+
+### Tier 3 — Industry / official
+- **Apache Spark documentation — "Cluster Mode Overview," "Submitting Applications," and the "Tuning Guide."** The authoritative source for the `spark-submit` lifecycle, driver vs. executor roles, and memory configuration (`spark.executor.memory`, `spark.driver.memory`, `spark.sql.shuffle.partitions`).
+- **Jacek Laskowski, *The Internals of Apache Spark* and *The Internals of Spark SQL* (free gitbooks).** Line-by-line depth on the scheduler, stages/tasks, and Catalyst.
+- **Databricks Engineering Blog — Catalyst, Tungsten, Adaptive Query Execution (AQE), and Photon.** How modern Spark actually optimizes and where skew/spill come from.
+- **Hands-on: the Spark UI and `df.explain(mode="formatted")`.** Reading real DAGs and physical plans is the fastest cure for a notebook-local mental model.
+
+---
+
+## Repo modules 03 and 05 — BI and warehousing
+
+## Module 5 — Data Warehousing, Dimensional Modeling & BI
+**Level:** Tier B · **Covers:** dimensions vs. measures (Tableau/Power BI), star schemas, facts vs. dimensions, slowly changing dimensions, and the lakehouse framing.
+
+### Tier 1 — Primary textbooks
+- **Ralph Kimball & Margy Ross, *The Data Warehouse Toolkit*, 3rd ed. (Wiley, 2013).** The source of the **dimension/measure** vocabulary — Tableau's "dimensions and measures" are Kimball's dimensions and facts. Essential.
+- **Joe Reis & Matt Housley, *Fundamentals of Data Engineering* (O'Reilly, 2022).** The modern, lakehouse-era framing — ingestion, transformation, serving, governance — that connects warehousing to medallion architecture.
+
+### Tier 2 — Academic literature
+- **Chaudhuri & Dayal, "An Overview of Data Warehousing and OLAP Technology," *SIGMOD Record* 1997.** The classic survey of star schemas, facts, and dimensions.
+- **Gray et al., "Data Cube: A Relational Aggregation Operator…," *Data Mining and Knowledge Discovery* 1(1), 1997.** Formalizes aggregation/measures across dimensions.
+
+### Tier 3 — Industry / official
+- **Tableau documentation — "Dimensions and Measures" (and green vs. blue pills).** The authoritative answer to a question many practitioners get wrong.
+- **dbt and Delta Lake documentation.** Modern dimensional modeling and the medallion architecture, formally.
+
+---
+
+## Repo module 06 — Kafka
+
+## Module 6 — Event Streaming & Kafka
+**Level:** Tier B → C · **Covers:** Kafka (common in production data platforms) and the watermark/window/trigger model that underlies stream processing (e.g. Apache Beam / Dataflow and Spark Structured Streaming).
+
+### Tier 1 — Primary textbooks
+- **Narkhede, Shapira & Palino, *Kafka: The Definitive Guide*, 2nd ed. (O'Reilly, 2021).** Architecture, partitions, consumer groups, exactly-once semantics.
+- **Akidau, Chernyak & Lax, *Streaming Systems* (O'Reilly, 2018).** Event time vs. processing time, windows, watermarks, triggers — the conceptual core of all modern stream processing.
+
+### Tier 2 — Academic literature
+- **Kreps, Narkhede & Rao, "Kafka: A Distributed Messaging System for Log Processing," *NetDB* 2011.** The origin paper.
+- **Akidau et al., "The Dataflow Model…," *PVLDB* 8(12), 2015.** The theoretical basis of Beam/Dataflow watermarks and triggers.
+- **Zaharia et al., "Discretized Streams," *SOSP* 2013** and **"Structured Streaming," *SIGMOD* 2018.** Spark's streaming model.
+
+### Tier 3 — Industry / official
+- **Confluent Developer / Apache Kafka documentation.** Authoritative, with hands-on tutorials.
+- **Jay Kreps, "The Log: What every software engineer should know about real-time data's unifying abstraction" (LinkedIn Engineering).** Seminal industry essay.
+
+---
+
+## Optional — Java OOP (not in this repo)
+
+## Module 7 — Object-Oriented Design & Design Patterns (Java/J2EE track)
+**Level:** Tier A → B · **Covers:** Core Java/J2EE + OOP + design patterns, for roles on a JVM stack; reinforces the OOP concepts from Module 1.
+
+### Tier 1 — Primary textbooks
+- **Joshua Bloch, *Effective Java*, 3rd ed. (Addison-Wesley, 2018).** The definitive Java OOP text — immutability, equals/hashCode, builders, generics.
+- **Gamma, Helm, Johnson & Vlissides (Gang of Four), *Design Patterns: Elements of Reusable Object-Oriented Software* (Addison-Wesley, 1994).** The canonical patterns reference.
+- **Freeman & Robson, *Head First Design Patterns*, 2nd ed. (O'Reilly, 2020).** The most accessible on-ramp to GoF patterns.
+
+### Tier 2 — Academic / foundational
+- **Liskov & Wing, "A Behavioral Notion of Subtyping," *ACM TOPLAS* 16(6), 1994.** The Liskov Substitution Principle — the formal core of correct OOP design.
+
+### Tier 3 — Industry
+- **Oracle Java Tutorials and the Jakarta EE (J2EE successor) documentation.** Current, authoritative.
+- **Martin Fowler, *Refactoring*, 2nd ed. (2018) and martinfowler.com.** Patterns and design in living practice.
+
+---
+
+## Repo module 07 — AI-assisted engineering
+
+## Module 8 — AI-Assisted Software Engineering
+**Level:** Tier B · **Covers:** working effectively with agentic coding tools (Claude Code, Codex, Copilot, and similar) and the role of a project-memory file (`CLAUDE.md`) in conserving context — increasingly expected in modern engineering roles.
+
+### Tier 1 — Primary text (emerging field; one true textbook so far)
+- **Chip Huyen, *AI Engineering* (O'Reilly, 2025).** The leading text on building with foundation models — context management, evaluation, and integrating LLMs into engineering workflows.
+
+### Tier 2 — Research / grey literature
+- **Peng et al., "The Impact of AI on Developer Productivity: Evidence from GitHub Copilot" (arXiv, 2023).** Empirical grounding for why firms increasingly require this.
+- **The prompt-engineering and agent literature** (e.g., work on chain-of-thought, ReAct-style tool use). Read for the conceptual model of how agentic coding tools reason and call tools.
+
+### Tier 3 — Industry / official
+- **Anthropic, "Claude Code: Best practices for agentic coding" (anthropic.com/engineering).** Patterns proven across Anthropic's internal teams.
+- **Claude Code documentation — "Manage Claude's Memory" / `CLAUDE.md`.** `CLAUDE.md` is a special file automatically pulled into context at the start of a session, used to document build/test commands, conventions, and project rules. Effective files are kept tight (practitioner consensus puts the high-signal range well under ~200 lines) so they conserve context and tokens rather than competing with the actual task.
+- **Anthropic, "Building effective agents" and the context-engineering posts.** How to structure agent workflows beyond a single UI.
+
+---
+
+## Repo module 08 — Lakehouse and medallion
+
+## Module 9 — Capstone: Data Governance at Scale
+**Level:** Tier C · **Covers:** integrating the prior modules into a governed, distributed, streaming medallion pipeline with measured performance tuning — lineage, data quality, stewardship, and table formats at scale.
+
+### Tier 1 — Primary references
+- **DAMA International, *DAMA-DMBOK: Data Management Body of Knowledge*, 2nd ed. (Technics, 2017).** The canonical governance reference formalizing lineage, quality, and stewardship.
+- **Reis & Housley, *Fundamentals of Data Engineering* (carried from Module 5)** for the end-to-end lifecycle.
+
+### Tier 2 — Standards / regulatory
+- **BCBS 239, "Principles for effective risk data aggregation and risk reporting" (Basel Committee, 2013).** A widely-cited standard; reading the source formalizes lineage and aggregation principles for regulated (e.g. banking) contexts.
+
+### Tier 3 — Industry
+- **Lakehouse and data-catalog documentation (e.g. Unity Catalog); the Delta Lake and Apache Iceberg specifications.** Governed table formats at scale — Parquet/ORC/Avro, ACID, time travel.
+
+---
+
+## Repo module 09 — Cloud & object storage portability
+
+## Module 10 — Cloud Data Platforms & Storage Portability  *(cross-cutting)*
+**Level:** Tier B · **Covers:** the *portable* layer of cloud data engineering — object storage and a single storage abstraction — across AWS, GCP, and Azure, using **local emulators** (LocalStack, fake-gcs-server, Azurite) so it honors the repo's "local Docker only — no cloud APIs, no spend" rule. Most data-engineering roles assume at least one cloud; this module builds the cross-cloud mental model rather than tying you to one vendor.
+
+### Tier 1 — Primary references
+- **Reis & Housley, *Fundamentals of Data Engineering* (carried from Module 5).** The cloud-native data lifecycle, storage abstractions, and the storage/compute decoupling object storage enables.
+- **Provider architecture-center docs** — AWS Well-Architected, Google Cloud Architecture Framework, Azure Architecture Center.
+
+### Tier 2 — Foundational
+- **Ghemawat, Gobioff & Leung, "The Google File System," *SOSP* 2003** (carried from Module 4) — the lineage from distributed file systems to object stores.
+- **DeCandia et al., "Dynamo: Amazon's Highly Available Key-value Store," *SOSP* 2007.** The consistency/availability tradeoffs underlying cloud object stores.
+
+### Tier 3 — Industry / official
+- **fsspec and the Arrow/Parquet filesystem docs.** The single-interface, swap-by-config pattern this module is built around.
+- **S3 / Cloud Storage / Azure Blob (ADLS Gen2) documentation**, and the **LocalStack / fake-gcs-server / Azurite** project docs for the emulators.
+
+---
+
+## Identified concept gaps (coverage audit)
+
+A pass over the modules plus typical senior job requirements surfaces these. Status reflects this repository.
+
+- **Cloud / multi-cloud** — **covered** by repo module 09 (object storage portability across AWS/GCP/Azure on local emulators).
+- **Dimensional modeling depth** (SCD2, snowflake, OLAP cube) — **covered** by repo module 05's `dimensional_modeling.py` and `olap_analytics.py`.
+- **Orchestration & transformation frameworks** (Airflow / Dagster, **dbt**) — *still a gap.* dbt is named in the Module 5 reading list but has no lab; a scheduling/transformation module is the strongest next addition.
+- **Table formats hands-on** (Delta / Iceberg ACID, time travel) — *partial.* Module 08 covers the concepts and a Parquet medallion; a real transactional table-format lab (e.g. delta-rs or pyiceberg, local) would close it.
+- **Data quality / contracts** (Great Expectations, schema enforcement) — *light*; touched only as medallion `WHERE` filters and lineage JSON.
+- **CI** — tests are runnable but there is no CI workflow wiring `make check`.
+
+---
+
+## 3. Suggested sequencing & priority
+
+For learners targeting **PySpark / big-data engineering** roles, sequence to hit the keystone fastest while repairing foundations in parallel (repo module numbers):
+
+1. **Weeks 1–4 (parallel):** Repo **01** (Python) + repo **02** (SQL: views/CTEs) — quickest wins; build calibration early. Study **DSA** (external) in parallel with 02.
+2. **Weeks 3–10 (core):** Repo **04** (Spark internals) — largest investment; keep DSA practice alongside for plan-reading and complexity reasoning.
+3. **Weeks 8–12:** Repo **03** (BI) + repo **05** (warehousing) + repo **06** (Kafka) + repo **09** (cloud).
+4. **Throughout:** Repo **07** (AI-assisted engineering) — adopt a `CLAUDE.md` on day one.
+5. **Optional / role-dependent:** Curriculum Module 7 (Java/OOP) for JVM-stack roles.
+6. **Finish:** Repo **08** (lakehouse / medallion capstone) — integrative, portfolio-grade.
+
+**One closing note on assessment.** Because confidence should track competence, grade every module on a live artifact, not recall: read and explain a real physical plan, reproduce and fix an executor *and* a driver OOM, write a recursive CTE against a real schema, run an object-store roundtrip across three clouds, and ship a `CLAUDE.md` that demonstrably cuts a project's token use. Skill is earned against the machine, not asserted.
 </file>
 
-<file path="docker-compose.yml">
+<file path="docs/modules.md">
+# Modules and labs
+
+Each folder under [`modules/`](../modules/) is a prove-it unit. **DSA** (algorithms) is studied in a **separate repository** in parallel with repo module 02.
+
+- **01 — Python** · [01_python_model](../modules/01_python_model/) · light · local only · `uv run pytest modules/01_python_model/tests`
+- **02 — SQL** · [02_sql_relational](../modules/02_sql_relational/) · **built** · `postgres` · `make seed`, `make up`, `make load-sql`, `make sql` · artifacts: `data/sql_plans/`
+- **03 — BI** · [03_bi_tools](../modules/03_bi_tools/) · light · local notes · `uv run pytest modules/03_bi_tools/tests`
+- **04 — PySpark** · [04_spark_internals](../modules/04_spark_internals/) · **built** · `spark-master`, workers · `make up`, `make seed`, `make spark-submit`, `make oom-lab` · artifacts: `data/explain/`
+- **05 — Warehousing** · [05_warehousing](../modules/05_warehousing/) · **built** · DuckDB · `make seed`, `uv run pytest modules/05_warehousing/tests` · SCD2, star/snowflake, ROLLUP/CUBE
+- **06 — Kafka** · [06_streaming_kafka](../modules/06_streaming_kafka/) · light · `kafka` · `make up`, `uv run pytest modules/06_streaming_kafka/tests -m kafka`
+- **07 — AI-assisted** · [07_ai_assisted_dev](../modules/07_ai_assisted_dev/) · agent files · repo root `CLAUDE.md`, `.cursor/rules/`
+- **08 — Lakehouse** · [08_lakehouse_medallion](../modules/08_lakehouse_medallion/) · light · local `data/medallion/` · `make seed`, pipeline script + pytest
+- **09 — Cloud portability** · [09_cloud_portability](../modules/09_cloud_portability/) · **built** · `localstack`/`fake-gcs`/`azurite` · `make up-cloud`, `uv sync --extra cloud`, `uv run pytest modules/09_cloud_portability/tests -m cloud`
+
+Reading lists and sequencing: [`curriculum.md`](curriculum.md).
+</file>
+
+<file path="docs/README.md">
+# Documentation
+
+- **[Setup](setup.md)** — WSL, Windows, `uv`, Docker, and `make` commands
+- **[Curriculum](curriculum.md)** — reading lists, tiers, and sequencing (committed)
+- **[Modules & labs](modules.md)** — repo folders, infrastructure, and run commands
+
+Hands-on code lives under [`modules/`](../modules/). Local textbook extracts (optional) go in [`references/`](../references/) (gitignored).
+</file>
+
+<file path="docs/setup.md">
+# Environment setup
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) with Compose
+- [WSL2](https://learn.microsoft.com/en-us/windows/wsl/) (recommended on Windows)
+- [uv](https://docs.astral.sh/uv/) (Python 3.12)
+
+## Where to run commands
+
+Run from the **repository root** in WSL (e.g. `/mnt/c/GitHub/data-engineering`). Paths like `modules/` and `src/` assume the root as the working directory.
+
+## Native Windows (no WSL)
+
+WSL is **not required**. Use the bundled PowerShell task runner [`tasks.ps1`](../tasks.ps1),
+which mirrors the Makefile targets against the local `.venv` and Docker Desktop:
+
+```powershell
+Copy-Item .env.example .env
+.\tasks.ps1 setup        # uv sync if uv is present, else pip install -e .[dev] into .venv
+.\tasks.ps1 up           # Docker services (needs Docker Desktop running)
+.\tasks.ps1 seed
+.\tasks.ps1 test
+.\tasks.ps1 check
+```
+
+Available tasks: `setup up down up-cloud down-cloud seed seed-large load-sql lint
+typecheck test test-cloud check spark-submit <job> oom-lab`.
+
+If you prefer raw commands, the venv interpreter works directly:
+
+```powershell
+$env:PYTHONPATH = "src;."
+.\.venv\Scripts\python.exe -m pytest -m "not spark and not kafka and not cloud"
+```
+
+> **Note:** `make`, `psql`, and `spark-submit` are not on the Windows PATH — they
+> run inside WSL or the Docker containers. The PowerShell tasks above invoke the
+> containerized `spark-submit` for you.
+
+## First-time setup
+
+```bash
+cp .env.example .env
+make setup    # uv sync + pre-commit
+make up       # Docker services (see infra/)
+make seed     # star-schema Parquet under data/
+```
+
+## Docker (`infra/`)
+
+Compose file: [`infra/docker-compose.yml`](../infra/docker-compose.yml). The Makefile wraps:
+
+```bash
+make up       # start Postgres, Spark (1 master + 2 workers), Kafka
+make down     # stop all services
+```
+
+- **Postgres** `5432` — module 02 SQL
+- **Spark master UI** `8080` — module 04 Spark
+- **Spark app UI** `4040` — module 04 (while a job runs)
+- **Spark master RPC** `7077` — module 04 Spark
+- **Kafka** `9092` — module 06 streaming (light)
+
+Cloud emulators (module 09) start under a separate profile and are **not** part of `make up`:
+
+```bash
+make up-cloud      # LocalStack (S3 :4566), fake-gcs (:4443), Azurite (:10000)
+make down-cloud
+```
+
+Details: [`infra/README.md`](../infra/README.md).
+
+## Shared data (`make seed`)
+
+[`src/def_/datagen/`](../src/def_/datagen/) generates Kimball-style retail Parquet. Module 02 loads it into Postgres; module 04 reads it from Spark.
+
+```bash
+make seed         # ~0.01 GB
+make seed-large   # ~1 GB (shuffle / spill practice)
+```
+
+## Light module tests (01, 03, 05, 06, 08)
+
+```bash
+uv run pytest modules/01_python_model/tests modules/03_bi_tools/tests
+make seed
+uv run pytest modules/05_warehousing/tests modules/08_lakehouse_medallion/tests
+make up
+uv run pytest modules/06_streaming_kafka/tests -m kafka
+```
+
+## Common commands
+
+- `make load-sql` — load Parquet into Postgres + SQL scripts (module 02)
+- `make sql` — `psql` shell
+- `make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py` — standalone Spark cluster
+- `make oom-lab` — module 04 OOM exercise (expect failure)
+- `make test` — pytest (skips Spark/Kafka/cloud integration by default)
+- `make test-cloud` — module 09 cloud roundtrip (needs `make up-cloud` + `uv sync --extra cloud`)
+- `make check` — lint + typecheck + test
+
+## Quickstart (full path)
+
+```bash
+cp .env.example .env
+make setup
+make up
+make seed
+make load-sql
+make test
+make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
+make check
+```
+
+Next: pick a module from [`modules.md`](modules.md) or [`modules/README.md`](../modules/README.md).
+</file>
+
+<file path="infra/docker-compose.yml">
 services:
   postgres:
     image: postgres:16
@@ -234,7 +1634,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data:/data:ro
+      - ../data:/data:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U def_user -d def_learning"]
       interval: 5s
@@ -259,8 +1659,8 @@ services:
       - "8080:8080"
       - "4040:4040"
     volumes:
-      - .:/workspace
-      - ./data:/data:ro
+      - ..:/workspace
+      - ../data:/data:ro
     working_dir: /workspace
 
   spark-worker-1:
@@ -279,8 +1679,8 @@ services:
     depends_on:
       - spark-master
     volumes:
-      - .:/workspace
-      - ./data:/data:ro
+      - ..:/workspace
+      - ../data:/data:ro
 
   spark-worker-2:
     image: bitnamilegacy/spark:3.5
@@ -298,8 +1698,8 @@ services:
     depends_on:
       - spark-master
     volumes:
-      - .:/workspace
-      - ./data:/data:ro
+      - ..:/workspace
+      - ../data:/data:ro
 
   kafka:
     image: apache/kafka:3.8.0
@@ -328,140 +1728,179 @@ services:
       timeout: 10s
       retries: 10
       start_period: 30s
+
+  # --- Module 09 cloud emulators (profile "cloud"; not started by plain `make up`) ---
+  # Local-only S3 / GCS / Blob. No real cloud, no credentials, no spend.
+  localstack:
+    image: localstack/localstack:3
+    container_name: def-localstack
+    profiles: ["cloud"]
+    environment:
+      - SERVICES=s3
+      - DEBUG=0
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  fake-gcs:
+    image: fsouza/fake-gcs-server:latest
+    container_name: def-fake-gcs
+    profiles: ["cloud"]
+    command: ["-scheme", "http", "-port", "4443", "-public-host", "localhost:4443"]
+    ports:
+      - "4443:4443"
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: def-azurite
+    profiles: ["cloud"]
+    # --skipApiVersionCheck: Azurite's supported API version lags the azure-storage
+    # SDK shipped with adlfs; without this the client's newer x-ms-version is rejected.
+    command:
+      ["azurite-blob", "--blobHost", "0.0.0.0", "--blobPort", "10000", "--skipApiVersionCheck"]
+    ports:
+      - "10000:10000"
 </file>
 
-<file path="Makefile">
-# Data Engineering Foundations — run from WSL at repo root.
-.PHONY: setup up down lint typecheck test seed spark-submit sql check load-sql oom-lab
+<file path="infra/README.md">
+# Infrastructure (Docker)
 
-UV := uv
-COMPOSE := docker compose
-PYTHONPATH := src:.
+Compose file for local labs: [`docker-compose.yml`](docker-compose.yml).
 
-export PYTHONPATH
+From the **repository root**:
 
-setup:
-	$(UV) sync --all-groups
-	$(UV) run pre-commit install
+```bash
+make up
+make down
+```
 
-up:
-	$(COMPOSE) up -d
-	@echo "Spark master UI: http://localhost:8080"
-	@echo "Spark app UI (when job runs): http://localhost:4040"
+## Services
 
-down:
-	$(COMPOSE) down
+- **postgres** — `localhost:5432`, db `def_learning`, user `def_user` (module 02)
+- **spark-master** + **spark-worker-1/2** — RPC `7077`, UI `8080`, app UI `4040` (module 04)
+- **kafka** — KRaft broker `localhost:9092` (module 06)
 
-lint:
-	$(UV) run ruff check src modules tests
-	$(UV) run ruff format --check src modules tests
+### Cloud emulators (profile `cloud`, module 09)
 
-typecheck:
-	$(UV) run mypy
+Started separately so plain `make up` stays lean:
 
-test:
-	$(UV) run pytest -m "not spark" --ignore=modules/04_spark_internals/tests
+```bash
+make up-cloud     # docker compose --profile cloud up -d localstack fake-gcs azurite
+make down-cloud
+```
 
-test-all:
-	$(UV) run pytest
+- **localstack** — AWS S3 at `localhost:4566`
+- **fake-gcs** — GCS at `localhost:4443`
+- **azurite** — Azure Blob at `localhost:10000`
 
-seed:
-	$(UV) run python -m def_.datagen.cli --scale-gb 0.01
+All local-only: no real cloud, no credentials, no spend.
 
-seed-large:
-	$(UV) run python -m def_.datagen.cli --scale-gb 1.0
-
-load-sql:
-	$(UV) run python modules/03_sql_relational/load_to_postgres.py
-
-sql:
-	PGPASSWORD=$${POSTGRES_PASSWORD:-def_pass} psql -h $${POSTGRES_HOST:-localhost} -p $${POSTGRES_PORT:-5432} -U $${POSTGRES_USER:-def_user} -d $${POSTGRES_DB:-def_learning}
-
-spark-submit:
-	@test -n "$(JOB)" || (echo "Usage: make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py" && exit 1)
-	$(COMPOSE) exec -T -e PYTHONPATH=/workspace/src spark-master spark-submit \
-		--master spark://spark-master:7077 \
-		--deploy-mode client \
-		--conf spark.driver.host=spark-master \
-		--conf spark.driver.bindAddress=0.0.0.0 \
-		/workspace/$(JOB)
-
-oom-lab:
-	@echo "WARNING: This job is designed to fail with executor OOM. Run only when cluster is up."
-	$(MAKE) spark-submit JOB=modules/04_spark_internals/oom_exercise.py
-
-check: lint typecheck test
+Repo root is mounted at `/workspace` inside Spark containers so `make spark-submit JOB=modules/...` paths work unchanged.
 </file>
 
-<file path="modules/01_python_model/README.md">
-# Module 01 — The Python Language Model & Object Orientation
+<file path="modules/01_python_model/exercises.py">
+"""Module 01 reference implementations for the Python data model."""
 
-## Interview gap this closes
+from __future__ import annotations
 
-> Could not cleanly define mutability/immutability; could not name mutable types and methods; unsure about array types; did not know dunder methods; hedged on OOP vs procedural vs scripting. Self-rated 10/10 with weak fundamentals.
+from collections.abc import Iterator
+from dataclasses import dataclass
 
-## Reference reading
 
-- *Fluent Python* (Ramalho) — Chapters 1–6, 11–12 (data model, sequences, interfaces)
+@dataclass
+class MutableDemo:
+    """Illustrates mutable vs immutable built-ins."""
 
-## Prove-it exercises (stub)
+    items: list[int]
 
-1. **Mutability drill** — Acceptance: pytest proves list/dict/set mutations vs str/tuple immutability errors.
-2. **Dunder methods** — Acceptance: custom class implements `__repr__`, `__eq__`, `__hash__` with tests.
-3. **Data model API** — Acceptance: sequence-like class passes len/iter/getitem contract tests.
+    def append(self, value: int) -> None:
+        self.items.append(value)
+
+
+@dataclass(frozen=True)
+class Vector2:
+    """Immutable value object with dunder protocol."""
+
+    x: float
+    y: float
+
+    def __repr__(self) -> str:
+        return f"Vector2(x={self.x}, y={self.y})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Vector2):
+            return NotImplemented
+        return self.x == other.x and self.y == other.y
+
+    def __hash__(self) -> int:
+        return hash((self.x, self.y))
+
+
+class MiniSequence:
+    """Minimal sequence protocol over a backing list."""
+
+    def __init__(self, values: list[int]) -> None:
+        self._values = list(values)
+
+    def __len__(self) -> int:
+        return len(self._values)
+
+    def __getitem__(self, index: int) -> int:
+        return self._values[index]
+
+    def __iter__(self) -> Iterator[int]:
+        return iter(self._values)
 </file>
 
-<file path="modules/01_python_model/tests/test_module_01_stub.py">
+<file path="modules/01_python_model/tests/test_python_model.py">
+"""Prove-it tests for Module 01 — Python data model."""
+
+from __future__ import annotations
+
+import sys
+from dataclasses import FrozenInstanceError
+from pathlib import Path
+
 import pytest
 
-pytestmark = pytest.mark.skip(reason="Module 01 stub — implement in a later pass")
+_MODULE_DIR = Path(__file__).resolve().parents[1]
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
+import exercises  # noqa: E402
 
 
 def test_mutability() -> None:
-    assert True
+    demo = exercises.MutableDemo(items=[1, 2])
+    demo.append(3)
+    assert demo.items == [1, 2, 3]
+    with pytest.raises(FrozenInstanceError):
+        exercises.Vector2(1.0, 2.0).x = 9.0  # type: ignore[misc]
 
 
 def test_dunder_methods() -> None:
-    assert True
+    a = exercises.Vector2(1.0, 2.0)
+    b = exercises.Vector2(1.0, 2.0)
+    c = exercises.Vector2(3.0, 4.0)
+    assert repr(a) == "Vector2(x=1.0, y=2.0)"
+    assert a == b
+    assert a != c
+    assert {a, b} == {a}
 
 
 def test_data_model_api() -> None:
-    assert True
+    seq = exercises.MiniSequence([10, 20, 30])
+    assert len(seq) == 3
+    assert seq[1] == 20
+    assert list(seq) == [10, 20, 30]
 </file>
 
-<file path="modules/02_dsa/README.md">
-# Module 02 — Data Structures, Algorithms & Problem Decomposition
-
-## Interview gap this closes
-
-> Struggled to decompose the star-pyramid pattern; confused rows vs characters; needed guidance for loop invariants and complexity reasoning.
-
-## Reference reading
-
-- *Introduction to Algorithms* (CLRS) — Chapters 2–4 (invariants, recurrences)
-- *The Algorithm Design Manual* (Skiena) — Chapter 2 (analysis)
-
-## Prove-it exercises (stub)
-
-1. **Loop invariant** — Acceptance: pytest verifies closed-form row count for pyramid pattern.
-2. **Complexity** — Acceptance: empirical timing test shows O(n) vs O(n²) implementations diverge as documented.
-</file>
-
-<file path="modules/02_dsa/tests/test_module_02_stub.py">
-import pytest
-
-pytestmark = pytest.mark.skip(reason="Module 02 stub")
-
-
-def test_pyramid_invariant() -> None:
-    assert True
-
-
-def test_complexity_empirical() -> None:
-    assert True
-</file>
-
-<file path="modules/03_sql_relational/load_to_postgres.py">
+<file path="modules/02_sql_relational/load_to_postgres.py">
 """Load generated Parquet star schema into Postgres."""
 
 from __future__ import annotations
@@ -559,17 +1998,29 @@ if __name__ == "__main__":
         sys.exit(1)
 </file>
 
-<file path="modules/03_sql_relational/README.md">
-# Module 03 — Relational Databases, SQL & Query Optimization
+<file path="modules/02_sql_relational/README.md">
+# Module 02 — Relational Databases, SQL & Query Optimization
 
-## Interview gap this closes
+## What's in this folder
 
-> Did not know what a VIEW is; did not know CTEs / the WITH clause; limited temp-table experience. Claims query-tuning experience (Postgres/MySQL) without fundamentals.
+- `sql/01_views.sql`, `sql/02_recursive_cte.sql`, `sql/03_index_demo.sql`
+- `load_to_postgres.py` — load Parquet into Postgres and apply scripts
+- `tests/test_sql_slice.py` — prove-it tests (`-m postgres`)
 
-## Reference reading
+## Infrastructure
 
-- *Database System Concepts* (Silberschatz) — Chapters 3–5 (relational model, SQL, views)
-- *SQL Performance Explained* (Winand) — Chapters 1–2 (indexing, filtering)
+Docker service: **postgres** (`infra/docker-compose.yml`). Requires `make seed` first (shared datagen).
+
+## Run
+
+```bash
+make seed
+make up
+make load-sql
+uv run pytest modules/02_sql_relational/tests -m postgres
+```
+
+Optional: `make sql` for an interactive `psql` shell.
 
 ## Prove-it exercises
 
@@ -577,17 +2028,12 @@ if __name__ == "__main__":
 2. **Recursive CTE** — Acceptance: `retail.v_category_tree` row count equals `product_hierarchy` rows; tree reaches level-3 nodes.
 3. **Index tuning** — Acceptance: `EXPLAIN ANALYZE` on `customer_key = 42` shows an Index Scan after creating `idx_fact_customer_key`; plan artifacts saved under `data/sql_plans/`.
 
-## Run this slice
+## Further reading
 
-```bash
-make seed
-make up
-make load-sql
-uv run pytest modules/03_sql_relational/tests -m postgres
-```
+[`docs/curriculum.md` — Repo module 02](../docs/curriculum.md#repo-module-02--sql)
 </file>
 
-<file path="modules/03_sql_relational/sql/01_views.sql">
+<file path="modules/02_sql_relational/sql/01_views.sql">
 -- Silberschatz — views: virtual table over a query (Ch. 4 conceptually).
 DROP VIEW IF EXISTS retail.v_sales_by_region;
 CREATE VIEW retail.v_sales_by_region AS
@@ -600,7 +2046,7 @@ JOIN retail.dim_store AS s ON f.store_key = s.store_key
 GROUP BY s.region;
 </file>
 
-<file path="modules/03_sql_relational/sql/02_recursive_cte.sql">
+<file path="modules/02_sql_relational/sql/02_recursive_cte.sql">
 -- Silberschatz — WITH RECURSIVE for hierarchical queries.
 DROP TABLE IF EXISTS retail.product_hierarchy CASCADE;
 CREATE TABLE retail.product_hierarchy (
@@ -647,14 +2093,14 @@ WITH RECURSIVE tree AS (
 SELECT * FROM tree;
 </file>
 
-<file path="modules/03_sql_relational/sql/03_index_demo.sql">
+<file path="modules/02_sql_relational/sql/03_index_demo.sql">
 -- SQL Performance Explained — indexing chapter: index created/dropped in tests.
 -- Baseline plans are captured by pytest via EXPLAIN ANALYZE.
 DROP INDEX IF EXISTS retail.idx_fact_customer_key;
 </file>
 
-<file path="modules/03_sql_relational/tests/test_sql_slice.py">
-"""Prove-it tests for Module 03 — views, recursive CTE, index tuning."""
+<file path="modules/02_sql_relational/tests/test_sql_slice.py">
+"""Prove-it tests for Module 02 — views, recursive CTE, index tuning."""
 
 from __future__ import annotations
 
@@ -752,6 +2198,153 @@ def test_index_speedup(db: psycopg.Connection) -> None:
 
     # Indexed path should not be slower than sequential (allow noise on tiny data)
     assert with_ms <= without_ms * 1.5 or "Index Scan" in with_plan
+</file>
+
+<file path="modules/03_bi_tools/notes/grain_checklist.md">
+# Fact grain checklist
+
+## Subject area
+
+Retail sales (`fact_sales` grain: one row per line item / sale event).
+
+## Grain definition
+
+- **Grain:** one row per `sale_id` (line on a ticket)
+- **Additive measures:** `quantity`, `sales_amount`
+- **Semi-additive:** none in this slice
+
+## Common mis-aggregation traps
+
+- Summing `sales_amount` after joining to `dim_product` without fixing grain duplicates rows
+- Averaging unit price across rows that are not at product-day grain
+
+## Your notes
+
+Extend this file when connecting Power BI or Tableau semantic models to `retail.fact_sales`.
+</file>
+
+<file path="modules/03_bi_tools/notes/lineage_example.md">
+# Lineage example — regional revenue
+
+## Report field
+
+Dashboard tile: **Regional Revenue** (sum).
+
+## Semantic model
+
+- Table: `Sales`
+- Measure: `Regional Revenue = SUM(Sales[sales_amount])`
+- Dimension: `Store[region]` from related `dim_store`
+
+## Warehouse source
+
+- Postgres schema `retail`
+- Fact: `retail.fact_sales.sales_amount`
+- Dimension: `retail.dim_store.region` via `fact_sales.store_key`
+
+## Lineage diagram (text)
+
+`Regional Revenue` → `SUM(sales_amount)` → `retail.fact_sales` → join `retail.dim_store` on `store_key`
+</file>
+
+<file path="modules/03_bi_tools/notes/tool_comparison.md">
+# Power BI vs Tableau — retail star schema
+
+## Connectivity
+
+### Power BI
+
+Import or DirectQuery to Postgres `retail` schema; Parquet via DuckDB export optional.
+
+### Tableau
+
+Postgres connector or Hyper extract from Parquet under `data/parquet/`.
+
+## Refresh
+
+### Power BI
+
+Scheduled refresh on import mode; DirectQuery is live.
+
+### Tableau
+
+Extract refresh schedule or live connection.
+
+## Row-level security
+
+### Power BI
+
+Dynamic RLS with `USERPRINCIPALNAME()` filters on `dim_store.region`.
+
+### Tableau
+
+User filters or Entitlement tables mapping users to `region`.
+
+## Your comparison notes
+
+Add screenshots or personal notes below when you complete the exercise.
+</file>
+
+<file path="modules/03_bi_tools/README.md">
+# Module 03 — BI Tools (Power BI, Tableau & Notes)
+
+**Status:** light
+
+## What's in this folder
+
+- `notes/grain_checklist.md`, `notes/lineage_example.md`, `notes/tool_comparison.md`
+- `tests/test_bi_notes.py` — validates note structure
+
+## Infrastructure
+
+No Docker services. Uses warehouse concepts from modules 02 and 05.
+
+## Run
+
+```bash
+uv run pytest modules/03_bi_tools/tests
+```
+
+## Prove-it exercises
+
+1. **Semantic model grain** — extend `notes/grain_checklist.md`
+2. **Report ↔ warehouse lineage** — extend `notes/lineage_example.md`
+3. **Tool comparison** — extend `notes/tool_comparison.md`
+
+## Further reading
+
+[`docs/curriculum.md` — Repo modules 03 and 05](../../docs/curriculum.md#repo-modules-03-and-05--bi-and-warehousing)
+</file>
+
+<file path="modules/03_bi_tools/tests/test_bi_notes.py">
+"""Prove-it tests for Module 03 — BI notes structure."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+NOTES_DIR = Path(__file__).resolve().parents[1] / "notes"
+
+REQUIRED_FILES: dict[str, list[str]] = {
+    "grain_checklist.md": ["## Grain definition", "## Common mis-aggregation traps"],
+    "lineage_example.md": ["## Report field", "## Warehouse source", "## Lineage diagram"],
+    "tool_comparison.md": [
+        "## Connectivity",
+        "### Power BI",
+        "### Tableau",
+        "## Row-level security",
+    ],
+}
+
+
+def test_notes_files_exist_with_headings() -> None:
+    for filename, headings in REQUIRED_FILES.items():
+        path = NOTES_DIR / filename
+        assert path.exists(), f"Missing {path}"
+        text = path.read_text(encoding="utf-8")
+        assert len(text.strip()) > 100, f"{filename} should contain substantive starter content"
+        for heading in headings:
+            assert heading in text, f"{filename} missing heading: {heading}"
 </file>
 
 <file path="modules/04_spark_internals/join_aggregate_job.py">
@@ -888,355 +2481,541 @@ if __name__ == "__main__":
         sys.exit(1)
 </file>
 
-<file path="modules/04_spark_internals/README.md">
-# Module 04 — Distributed Systems & Apache Spark Internals
-
-## Interview gap this closes
-
-> Could not explain spark-submit lifecycle (driver, executors, DAG, Catalyst, jobs/stages/tasks); PySpark described as "open a session, close a session"; could not diagnose executor OOM; no experience past ~5 GB.
-
-## Reference reading
-
-- *Learning Spark* — Chapters 2–3 (architecture, SparkSession)
-- *Spark: The Definitive Guide* — Chapters 2–3, 10 (core concepts, SQL)
-- *Designing Data-Intensive Applications* (Kleppmann) — Chapter 10 (batch processing)
-
-## Prove-it exercises (this pass)
-
-1. **Cluster join/aggregate** — Run `make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py`. Acceptance: job completes on standalone cluster; `data/explain/join_aggregate.txt` contains a physical plan with shuffle/exchange.
-2. **Read the Spark UI** — Open http://localhost:8080 (cluster) and http://localhost:4040 (application). Acceptance: you can point to **Jobs → Stages → Tasks** and identify the shuffle stage.
-3. **Catalyst plans** — Compare logical vs physical sections in the explain file. Acceptance: you can name where Catalyst optimization (predicate pushdown, join reorder) appears in the formatted plan.
-4. **OOM lab** — Run `make oom-lab` (expect failure). Acceptance: you can explain skew + shuffle + low executor memory as root cause; document fix (broadcast join, repartition, `spark.executor.memory`).
-
-## Logical vs physical plan (walkthrough)
-
-1. **Logical plan** — Unresolved/reresolved logical nodes (what you asked for: joins, aggregates).
-2. **Catalyst** — Rule-based optimizer rewrites the logical plan (filter pushdown, constant folding).
-3. **Physical plan** — Concrete operators (`Exchange` = shuffle, `SortAggregate`, `BroadcastHashJoin`) scheduled as **jobs** containing **stages** separated by shuffle boundaries, each stage having **tasks** on executors.
-
-## Run this slice
-
-```bash
-make up
-make seed        # use make seed-large for shuffle-heavy runs
-make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
-```
-</file>
-
-<file path="modules/04_spark_internals/tests/test_spark_slice.py">
-"""Prove-it tests for Module 04 — Spark cluster integration."""
+<file path="modules/05_warehousing/query_star_schema.py">
+"""Module 05 — DuckDB star-schema queries over generated Parquet."""
 
 from __future__ import annotations
 
+import duckdb
+
+from def_.common.io import parquet_paths
+
+
+def regional_sales_aggregate() -> duckdb.DuckDBPyRelation:
+    paths = parquet_paths()
+    fact = paths["fact_sales"]
+    store = paths["dim_store"]
+    con = duckdb.connect()
+    return con.sql(
+        f"""
+        SELECT s.region, SUM(f.sales_amount) AS total_sales, COUNT(*) AS line_count
+        FROM read_parquet('{fact}/**/*.parquet') AS f
+        JOIN read_parquet('{store}/**/*.parquet') AS s ON f.store_key = s.store_key
+        GROUP BY s.region
+        ORDER BY s.region
+        """
+    )
+
+
+def main() -> None:
+    rel = regional_sales_aggregate()
+    rows = rel.fetchall()
+    print(f"regions={len(rows)}")
+    for row in rows[:5]:
+        print(row)
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="modules/05_warehousing/README.md">
+# Module 05 — Data Warehousing & Dimensional Modeling
+
+**Status:** built
+
+Closes the *dimensions vs measures* gap (Kimball / Tableau) and the warehousing
+core: grain, slowly changing dimensions, star vs snowflake, and OLAP aggregation.
+Everything runs locally on **DuckDB** over `make seed` Parquet — **no Docker**.
+
+## What's in this folder
+
+- `query_star_schema.py` — regional sales aggregate (intro)
+- `dimensional_modeling.py` — fan-out trap, **SCD Type 2**, star vs snowflake
+- `olap_analytics.py` — **ROLLUP/CUBE/GROUPING SETS**, window running totals, materialized gold
+- `tests/` — `test_warehousing_duckdb.py`, `test_dimensional_modeling.py`, `test_olap_analytics.py`
+
+## Infrastructure
+
+Local DuckDB over `data/parquet/` (requires `make seed`). DuckDB is a project
+dependency — no services to start.
+
+## Run
+
+**WSL / macOS / Linux (Makefile):**
+
+```bash
+make seed
+uv run python modules/05_warehousing/dimensional_modeling.py
+uv run python modules/05_warehousing/olap_analytics.py
+uv run pytest modules/05_warehousing/tests
+```
+
+**Windows (native, no WSL)** — see [`docs/setup.md`](../../docs/setup.md):
+
+```powershell
+.\tasks.ps1 seed
+.\.venv\Scripts\python.exe modules\05_warehousing\dimensional_modeling.py
+.\.venv\Scripts\python.exe modules\05_warehousing\olap_analytics.py
+.\tasks.ps1 test
+```
+
+## Prove-it exercises
+
+1. **Grain & the fan-out trap** — `fanout_trap()` proves a 2× duplicated dimension
+   doubles `SUM(sales_amount)`. Acceptance: `inflated_total == 2 × true_total`.
+2. **SCD Type 2** — `build_scd2()` versions a customer dimension across two
+   snapshots. Acceptance: exactly one `is_current` row per customer; every 7th
+   customer carries a historical row (`customers // 7`).
+3. **Star vs snowflake** — `star_category_revenue()` and `snowflake_category_revenue()`
+   return identical revenue; the snowflake form pays an extra join. Acceptance:
+   the two results are equal.
+4. **ROLLUP / CUBE** — `rollup_region_category()` yields subtotals + one grand-total
+   row whose revenue equals the sum of the detail rows. Acceptance: grand total
+   reconciles to the detail sum.
+5. **Window functions** — `running_total_by_region()` produces a non-decreasing
+   cumulative total ending at the grand total, plus a revenue rank.
+6. **Materialized aggregate** — `materialized_region_revenue()` pre-computes a
+   gold table with one row per region (the materialized-view / gold-layer pattern).
+
+## Concepts → code
+
+| Kimball / OLAP concept | Where |
+|---|---|
+| Dimension vs measure | every `GROUP BY <dim>` over `SUM(sales_amount)` |
+| Grain / additivity | `fanout_trap()` |
+| Slowly changing dimension (Type 2) | `build_scd2()` |
+| Normalization tradeoff | `star_` vs `snowflake_category_revenue()` |
+| Data cube (Gray 1997) | `cube_region_category()` |
+| Pre-aggregation / materialized view | `materialized_region_revenue()` |
+
+## Further reading
+
+[`docs/curriculum.md` — Repo modules 03 and 05](../../docs/curriculum.md#repo-modules-03-and-05--bi-and-warehousing)
+</file>
+
+<file path="modules/05_warehousing/tests/test_warehousing_duckdb.py">
+"""Prove-it tests for Module 05 — DuckDB warehousing."""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import duckdb
+import pytest
+
+from def_.common.io import parquet_paths
+
+_MODULE_DIR = Path(__file__).resolve().parents[1]
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
+import query_star_schema  # noqa: E402
+
+
+def _parquet_ready() -> bool:
+    paths = parquet_paths()
+    fact_files = list(paths["fact_sales"].glob("**/*.parquet"))
+    store_files = list(paths["dim_store"].glob("**/*.parquet"))
+    return bool(fact_files and store_files)
+
+
+@pytest.fixture(scope="module")
+def require_seed() -> None:
+    if not _parquet_ready():
+        pytest.skip("Parquet missing — run: make seed")
+
+
+def test_fact_sales_has_rows(require_seed: None) -> None:
+    fact = parquet_paths()["fact_sales"]
+    con = duckdb.connect()
+    count = con.sql(f"SELECT COUNT(*) FROM read_parquet('{fact}/**/*.parquet')").fetchone()[0]
+    assert count > 0
+
+
+def test_regional_aggregate_grain(require_seed: None) -> None:
+    paths = parquet_paths()
+    store = paths["dim_store"]
+    con = duckdb.connect()
+    regions = con.sql(
+        f"SELECT COUNT(DISTINCT region) FROM read_parquet('{store}/**/*.parquet')"
+    ).fetchone()[0]
+    rows = query_star_schema.regional_sales_aggregate().fetchall()
+    assert len(rows) == regions
+    assert all(row[1] is not None for row in rows)
+</file>
+
+<file path="modules/06_streaming_kafka/roundtrip.py">
+"""Module 06 — produce and consume JSON events on local Kafka."""
+
+from __future__ import annotations
+
+import json
 import os
+import time
+import uuid
+from typing import Any
+
+from kafka import KafkaConsumer, KafkaProducer
+from kafka.errors import NoBrokersAvailable
+
+TOPIC = "def_learning_events"
+BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP", "localhost:9092")
+GROUP_ID = "def_learning_roundtrip"
+
+
+def _producer() -> KafkaProducer:
+    return KafkaProducer(
+        bootstrap_servers=BOOTSTRAP,
+        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+    )
+
+
+def roundtrip(count: int = 5) -> int:
+    """Produce `count` messages and return how many were consumed for this run."""
+    run_id = str(uuid.uuid4())
+    producer = _producer()
+    for i in range(count):
+        payload: dict[str, Any] = {"run_id": run_id, "seq": i, "event": "sale"}
+        producer.send(TOPIC, payload)
+    producer.flush()
+    producer.close()
+
+    time.sleep(1.0)
+    consumer = KafkaConsumer(
+        TOPIC,
+        bootstrap_servers=BOOTSTRAP,
+        group_id=f"{GROUP_ID}_{run_id}",
+        auto_offset_reset="earliest",
+        consumer_timeout_ms=10_000,
+        value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+    )
+    seen = 0
+    for message in consumer:
+        value = message.value
+        if isinstance(value, dict) and value.get("run_id") == run_id:
+            seen += 1
+    consumer.close()
+    return seen
+
+
+def main() -> None:
+    try:
+        received = roundtrip(5)
+    except NoBrokersAvailable as exc:
+        raise SystemExit(f"Kafka not available at {BOOTSTRAP}: {exc}") from exc
+    print(f"received={received}")
+    if received != 5:
+        raise SystemExit(f"expected 5 messages, got {received}")
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="modules/06_streaming_kafka/tests/test_kafka_roundtrip.py">
+"""Prove-it tests for Module 06 — Kafka roundtrip."""
+
+from __future__ import annotations
+
 import socket
-import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-EXPLAIN_FILE = Path(os.environ.get("DATA_DIR", "data")) / "explain" / "join_aggregate.txt"
+pytest.importorskip("kafka")
+
+_MODULE_DIR = Path(__file__).resolve().parents[1]
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
+import roundtrip  # noqa: E402
+
+pytestmark = pytest.mark.kafka
 
 
-def _spark_master_reachable() -> bool:
-    host = os.environ.get("SPARK_MASTER_HOST", "localhost")
-    port = int(os.environ.get("SPARK_MASTER_PORT", "7077"))
+def _kafka_reachable() -> bool:
+    host, _, port_str = roundtrip.BOOTSTRAP.partition(":")
+    port = int(port_str or "9092")
     try:
-        with socket.create_connection((host, port), timeout=2):
+        with socket.create_connection((host or "localhost", port), timeout=2):
             return True
     except OSError:
         return False
 
 
-@pytest.mark.spark
-def test_explain_artifact_after_submit() -> None:
-    if not _spark_master_reachable():
-        pytest.skip("Spark master not reachable — run: make up")
-
-    job = REPO_ROOT / "modules" / "04_spark_internals" / "join_aggregate_job.py"
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(REPO_ROOT / "src")
-    env["SPARK_MASTER_URL"] = os.environ.get("SPARK_MASTER_URL", "spark://localhost:7077")
-
-    result = subprocess.run(
-        [
-            "docker",
-            "compose",
-            "exec",
-            "-T",
-            "-e",
-            "PYTHONPATH=/workspace/src",
-            "spark-master",
-            "spark-submit",
-            "--master",
-            "spark://spark-master:7077",
-            "--deploy-mode",
-            "client",
-            "--conf",
-            "spark.driver.host=spark-master",
-            "--conf",
-            "spark.driver.bindAddress=0.0.0.0",
-            f"/workspace/{job.relative_to(REPO_ROOT).as_posix()}",
-        ],
-        cwd=REPO_ROOT,
-        capture_output=True,
-        text=True,
-        timeout=300,
-        check=False,
-    )
-    if result.returncode != 0:
-        pytest.fail(f"spark-submit failed:\n{result.stderr}\n{result.stdout}")
-
-    assert EXPLAIN_FILE.exists(), "Run join_aggregate_job to produce explain file"
-    content = EXPLAIN_FILE.read_text(encoding="utf-8")
-    assert len(content) > 50
-    assert any(kw in content.lower() for kw in ("shuffle", "exchange", "aggregate", "join"))
-
-
-def test_explain_file_exists_or_skip() -> None:
-    """Fast check when explain artifact already present from manual run."""
-    if EXPLAIN_FILE.exists():
-        assert (
-            "Physical Plan" in EXPLAIN_FILE.read_text(encoding="utf-8")
-            or len(EXPLAIN_FILE.read_text(encoding="utf-8")) > 100
-        )
-    elif not _spark_master_reachable():
-        pytest.skip("No explain file and Spark not up")
-</file>
-
-<file path="modules/05_warehousing_bi/README.md">
-# Module 05 — Data Warehousing, Dimensional Modeling & BI
-
-## Interview gap this closes
-
-> Did not know dimensions vs measures in Tableau; could not formalize star schemas and facts vs dimensions despite lakehouse/medallion experience.
-
-## Reference reading
-
-- *The Data Warehouse Toolkit* (Kimball) — Chapters 1–4 (dimensional modeling, facts/dimensions)
-- *Fundamentals of Data Engineering* (Reis & Housley) — Chapters 4–6 (modeling in modern stacks)
-
-## Prove-it exercises (stub)
-
-1. **Star schema in DuckDB** — Acceptance: dimensional model queries return correct grain per fact table.
-2. **Measures vs dimensions** — Acceptance: tests distinguish additive vs semi-additive measures.
-</file>
-
-<file path="modules/05_warehousing_bi/tests/test_module_05_stub.py">
-import pytest
-
-pytestmark = pytest.mark.skip(reason="Module 05 stub")
-
-
-def test_star_schema_duckdb() -> None:
-    assert True
-
-
-def test_additive_measures() -> None:
-    assert True
-</file>
-
-<file path="modules/06_streaming_kafka/README.md">
-# Module 06 — Event Streaming & Kafka
-
-## Interview gap this closes
-
-> Kafka required in target JDs; formalize event-time vs processing-time beyond existing Beam experience.
-
-## Reference reading
-
-- *Kafka: The Definitive Guide* — Chapters 1–4 (architecture, producers, consumers)
-- *Streaming Systems* (Akidau) — Chapters 2–4 (windows, watermarks)
-
-## Prove-it exercises (stub)
-
-1. **Produce/consume** — Acceptance: pytest produces to local KRaft broker and consumes expected count.
-2. **Consumer groups** — Acceptance: partition assignment observable in consumer lag metrics.
-</file>
-
-<file path="modules/06_streaming_kafka/tests/test_module_06_stub.py">
-import pytest
-
-pytestmark = pytest.mark.skip(reason="Module 06 stub")
-
-
 def test_kafka_roundtrip() -> None:
-    assert True
+    if not _kafka_reachable():
+        pytest.skip("Kafka not reachable — run: make up")
+    received = roundtrip.roundtrip(3)
+    assert received == 3
 
 
-def test_consumer_group() -> None:
-    assert True
+def test_consumer_group_uses_configured_group() -> None:
+    assert roundtrip.GROUP_ID == "def_learning_roundtrip"
 </file>
 
-<file path="modules/07_oop_design_patterns/README.md">
-# Module 07 — Object-Oriented Design & Design Patterns
+<file path="modules/07_ai_assisted_dev/README.md">
+# Module 07 — AI-Assisted Software Engineering
 
-## Interview gap this closes
+## What's in this folder
 
-> Hedged on OOP in Python; Fullstack JD expects Java/J2EE patterns fluency.
+- This README — graded deliverable is repo-level agent files, not code under `modules/07/`
 
-## Reference reading
+## Infrastructure
 
-- *Fluent Python* — Chapters 11–14 (inheritence, protocols)
-- *Design Patterns* (GoF) — Chapters 1–5 (creational, structural intro)
+None. Artifacts live at the repository root.
 
-**Optional Java track:** *Effective Java* (Bloch) — Chapters 2–4 for J2EE-oriented roles.
+## Run
 
-## Prove-it exercises (stub)
+Review and maintain:
 
-1. **Python protocol** — Acceptance: implement strategy pattern with typed protocol + tests.
-2. **Pattern recognition** — Acceptance: refactor exercise passes tests after applying factory method.
-</file>
-
-<file path="modules/07_oop_design_patterns/tests/test_module_07_stub.py">
-import pytest
-
-pytestmark = pytest.mark.skip(reason="Module 07 stub")
-
-
-def test_strategy_pattern() -> None:
-    assert True
-
-
-def test_factory_refactor() -> None:
-    assert True
-</file>
-
-<file path="modules/08_ai_assisted_dev/README.md">
-# Module 08 — AI-Assisted Software Engineering
-
-## Interview gap this closes
-
-> Did not know the purpose of CLAUDE.md or how it conserves context/tokens; had only used agents via a GitHub UI.
-
-## Reference reading
-
-- Anthropic — Claude Code documentation ("Manage Claude's Memory" / CLAUDE.md)
-- *AI Engineering* (Huyen) — Chapters on context and tooling (when available)
+- [`CLAUDE.md`](../../CLAUDE.md)
+- [`.cursor/rules/`](../../.cursor/rules/)
 
 ## Prove-it exercises
 
-1. **Agent memory file** — Acceptance: this repo ships [`CLAUDE.md`](../../CLAUDE.md) under ~200 lines with build/test/submit commands.
-2. **Cursor rules** — Acceptance: [`.cursor/rules/`](../../.cursor/rules/) encode project conventions (alwaysApply + Python typing).
+1. **Agent memory file** — Acceptance: [`CLAUDE.md`](../../CLAUDE.md) under ~200 lines with build/test/submit commands.
+2. **Cursor rules** — Acceptance: [`.cursor/rules/`](../../.cursor/rules/) encode project conventions.
 3. **Token discipline** — Acceptance: you can explain why long verbatim textbook paste in prompts hurts task performance vs tight project rules.
 
-## Lesson
+## Further reading
 
-The committed agent artifacts (`CLAUDE.md`, `.cursor/rules/*.mdc`) are the graded deliverable for Module 08 in this pass.
+[`docs/curriculum.md` — Repo module 07](../docs/curriculum.md#repo-module-07--ai-assisted-engineering)
 </file>
 
-<file path="modules/09_capstone_governance/README.md">
-# Module 09 — Capstone: Data Governance at Scale
+<file path="modules/08_lakehouse_medallion/delta_concepts.md">
+# Delta-style table concepts (portable)
 
-## Interview gap this closes
+## ACID on object storage
 
-> Governed pipelines were real but only to ~5 GB; need terabyte-scale streaming/distributed practice with measured tuning.
+Delta Lake (and similar formats) add transaction logs atop Parquet so readers see consistent snapshots. Writers commit new files plus log entries atomically.
 
-## Reference reading
+## Time travel
 
-- *Fundamentals of Data Engineering* (Reis & Housley) — Full lifecycle chapters
-- *Designing Data-Intensive Applications* (Kleppmann) — Chapters 11–12 (stream processing, consistency)
-- DAMA-DMBOK — Data governance framework (reference)
+Table version history lets you query `VERSION AS OF` or read older snapshots for audit and replay.
 
-## Prove-it exercises (stub)
+## Schema evolution
 
-1. **Medallion at scale** — Acceptance: Bronze/Silver/Gold pipeline on generated multi-GB data with lineage metadata.
-2. **Performance report** — Acceptance: document shuffle bytes, spill, and tuning changes with before/after metrics.
+New columns can be added with merge semantics; incompatible changes require explicit migration plans.
+
+## Relation to this repo
+
+Module 08 light pass uses **local Parquet layers** under `data/medallion/` to practice medallion *layering* without a Delta JAR. Compare mentally to how Bronze/Silver/Gold map to governed tables in a lakehouse platform.
+
+## Your write-up
+
+Expand this section with one paragraph per bullet tying each concept to `retail.fact_sales` grain and lineage in `data/medallion/lineage.json`.
 </file>
 
-<file path="modules/09_capstone_governance/tests/test_module_09_stub.py">
+<file path="modules/08_lakehouse_medallion/medallion_pipeline.py">
+"""Module 08 — local bronze/silver/gold medallion on generated Parquet."""
+
+from __future__ import annotations
+
+import json
+import shutil
+from datetime import UTC, datetime
+from pathlib import Path
+
+import duckdb
+
+from def_.common.io import data_dir, parquet_paths
+
+
+def medallion_root() -> Path:
+    root = data_dir() / "medallion"
+    root.mkdir(parents=True, exist_ok=True)
+    return root
+
+
+def run_pipeline() -> dict[str, int | str]:
+    paths = parquet_paths()
+    root = medallion_root()
+    bronze = root / "bronze" / "fact_sales"
+    silver = root / "silver" / "fact_sales.parquet"
+    gold = root / "gold" / "regional_revenue.parquet"
+    lineage_file = root / "lineage.json"
+
+    if bronze.exists():
+        shutil.rmtree(bronze)
+    if silver.exists():
+        silver.unlink()
+    if gold.exists():
+        gold.unlink()
+    bronze.mkdir(parents=True)
+    for parquet_file in paths["fact_sales"].glob("**/*.parquet"):
+        dest = bronze / parquet_file.name
+        shutil.copy2(parquet_file, dest)
+
+    silver.parent.mkdir(parents=True, exist_ok=True)
+    con = duckdb.connect()
+    fact_glob = str(bronze / "*.parquet")
+    con.sql(
+        f"""
+        COPY (
+            SELECT * FROM read_parquet('{fact_glob}')
+            WHERE quantity > 0
+        ) TO '{silver}' (FORMAT PARQUET)
+        """
+    )
+
+    store_glob = str(paths["dim_store"] / "**/*.parquet")
+    gold.parent.mkdir(parents=True, exist_ok=True)
+    con.sql(
+        f"""
+        COPY (
+            SELECT s.region, SUM(f.sales_amount) AS revenue
+            FROM read_parquet('{silver}') AS f
+            JOIN read_parquet('{store_glob}') AS s ON f.store_key = s.store_key
+            GROUP BY s.region
+        ) TO '{gold}' (FORMAT PARQUET)
+        """
+    )
+
+    bronze_count = con.sql(f"SELECT COUNT(*) FROM read_parquet('{fact_glob}')").fetchone()[0]
+    silver_count = con.sql(f"SELECT COUNT(*) FROM read_parquet('{silver}')").fetchone()[0]
+    gold_count = con.sql(f"SELECT COUNT(*) FROM read_parquet('{gold}')").fetchone()[0]
+
+    lineage = {
+        "timestamp": datetime.now(UTC).isoformat(),
+        "bronze_rows": bronze_count,
+        "silver_rows": silver_count,
+        "gold_rows": gold_count,
+        "layers": ["bronze", "silver", "gold"],
+    }
+    lineage_file.write_text(json.dumps(lineage, indent=2), encoding="utf-8")
+    return {
+        "bronze_rows": bronze_count,
+        "silver_rows": silver_count,
+        "gold_rows": gold_count,
+        "lineage_path": str(lineage_file),
+    }
+
+
+def main() -> None:
+    stats = run_pipeline()
+    print(stats)
+
+
+if __name__ == "__main__":
+    main()
+</file>
+
+<file path="modules/08_lakehouse_medallion/README.md">
+# Module 08 — Lakehouse, Delta Lake & Medallion Architecture
+
+**Status:** light
+
+## What's in this folder
+
+- `medallion_pipeline.py` — bronze / silver / gold Parquet layers + `data/medallion/lineage.json`
+- `delta_concepts.md` — ACID, time travel, schema evolution write-up starter
+- `tests/test_medallion_pipeline.py` — pipeline and lineage checks
+
+## Infrastructure
+
+Local DuckDB + `data/parquet/` from `make seed` (no Spark required for light pass).
+
+## Run
+
+```bash
+make seed
+uv run python modules/08_lakehouse_medallion/medallion_pipeline.py
+uv run pytest modules/08_lakehouse_medallion/tests
+```
+
+## Prove-it exercises
+
+1. **Medallion at scale** — bronze/silver/gold under `data/medallion/` with lineage metadata
+2. **Delta-style table semantics** — expand `delta_concepts.md`
+3. **Performance report** — optional: tie tuning notes back to module 04 Spark work
+
+## Further reading
+
+[`docs/curriculum.md` — Repo module 08](../../docs/curriculum.md#repo-module-08--lakehouse-and-medallion)
+</file>
+
+<file path="modules/08_lakehouse_medallion/tests/test_medallion_pipeline.py">
+"""Prove-it tests for Module 08 — medallion pipeline."""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
 import pytest
 
-pytestmark = pytest.mark.skip(reason="Module 09 stub")
+from def_.common.io import data_dir, parquet_paths
+
+_MODULE_DIR = Path(__file__).resolve().parents[1]
+if str(_MODULE_DIR) not in sys.path:
+    sys.path.insert(0, str(_MODULE_DIR))
+
+import medallion_pipeline  # noqa: E402
+
+DELTA_CONCEPTS = _MODULE_DIR / "delta_concepts.md"
 
 
-def test_medallion_pipeline() -> None:
-    assert True
+def _parquet_ready() -> bool:
+    return bool(list(parquet_paths()["fact_sales"].glob("**/*.parquet")))
 
 
-def test_performance_report() -> None:
-    assert True
+@pytest.fixture(scope="module")
+def pipeline_stats() -> dict[str, int | str]:
+    if not _parquet_ready():
+        pytest.skip("Parquet missing — run: make seed")
+    return medallion_pipeline.run_pipeline()
+
+
+def test_medallion_layers_exist(pipeline_stats: dict[str, int | str]) -> None:
+    root = data_dir() / "medallion"
+    assert (root / "bronze" / "fact_sales").exists()
+    assert (root / "silver" / "fact_sales.parquet").exists()
+    assert (root / "gold" / "regional_revenue.parquet").exists()
+    assert pipeline_stats["bronze_rows"] > 0
+    assert pipeline_stats["silver_rows"] > 0
+    assert pipeline_stats["gold_rows"] > 0
+
+
+def test_lineage_json(pipeline_stats: dict[str, int | str]) -> None:
+    lineage_path = Path(str(pipeline_stats["lineage_path"]))
+    data = json.loads(lineage_path.read_text(encoding="utf-8"))
+    assert data["layers"] == ["bronze", "silver", "gold"]
+    assert "timestamp" in data
+    assert data["silver_rows"] <= data["bronze_rows"]
+
+
+def test_delta_concepts_structure() -> None:
+    text = DELTA_CONCEPTS.read_text(encoding="utf-8")
+    for heading in ("## ACID on object storage", "## Time travel", "## Schema evolution"):
+        assert heading in text
+    assert len(text.strip()) > 200
+</file>
+
+<file path="modules/README.md">
+# Learning modules (01–09)
+
+Prove-it units with exercises, tests, and run instructions. Full index: [`docs/modules.md`](../docs/modules.md).
+
+- [01_python_model](01_python_model/) — Python language model (light)
+- [02_sql_relational](02_sql_relational/) — SQL (**built**)
+- [03_bi_tools](03_bi_tools/) — BI tools (light)
+- [04_spark_internals](04_spark_internals/) — PySpark internals (**built**)
+- [05_warehousing](05_warehousing/) — Warehousing (**built**)
+- [06_streaming_kafka](06_streaming_kafka/) — Kafka (light)
+- [07_ai_assisted_dev](07_ai_assisted_dev/) — AI-assisted engineering
+- [08_lakehouse_medallion](08_lakehouse_medallion/) — Lakehouse / medallion (light)
+- [09_cloud_portability](09_cloud_portability/) — Cloud object storage: AWS/GCP/Azure (**built**)
+
+Curriculum: [`docs/curriculum.md`](../docs/curriculum.md). Setup: [`docs/setup.md`](../docs/setup.md).
 </file>
 
 <file path="notebooks/.gitkeep">
 
-</file>
-
-<file path="pyproject.toml">
-[project]
-name = "data-engineering-foundations"
-version = "0.1.0"
-description = "Hands-on data engineering foundations — prove-it modules with local Docker infra"
-readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "duckdb>=1.1.0",
-    "psycopg[binary]>=3.2.0",
-    "pyarrow>=18.0.0",
-    "pyspark>=3.5.0,<4",
-]
-
-[project.optional-dependencies]
-dev = [
-    "mypy>=1.13.0",
-    "pre-commit>=4.0.0",
-    "pytest>=8.3.0",
-    "pytest-cov>=6.0.0",
-    "ruff>=0.8.0",
-    "types-psycopg2>=2.9.21.20240819",
-]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/def_"]
-
-[dependency-groups]
-dev = [
-    "mypy>=1.13.0",
-    "pre-commit>=4.0.0",
-    "pytest>=8.3.0",
-    "pytest-cov>=6.0.0",
-    "ruff>=0.8.0",
-]
-
-[tool.ruff]
-line-length = 100
-target-version = "py312"
-src = ["src", "modules", "tests"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM"]
-
-[tool.mypy]
-python_version = "3.12"
-strict = true
-files = ["src/def_"]
-mypy_path = "src"
-explicit_package_bases = true
-namespace_packages = true
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = ["pyspark.*"]
-ignore_missing_imports = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests", "modules"]
-pythonpath = ["src", "."]
-markers = [
-    "integration: integration tests requiring docker services",
-    "postgres: requires Postgres from docker compose",
-    "spark: requires Spark cluster from docker compose",
-]
-addopts = "-ra --tb=short"
-
-[tool.coverage.run]
-source = ["def_"]
-omit = ["*/tests/*"]
 </file>
 
 <file path="src/def_/__init__.py">
@@ -1662,9 +3441,21 @@ def test_parquet_paths_under_data() -> None:
     assert "parquet" in str(base) or base.name == "data" or Path("data") in base.parents
 </file>
 
-<file path=".gitattributes">
-# Auto detect text files and perform LF normalization
-* text=auto
+<file path=".cursor/rules/00-project.mdc">
+---
+description: Data Engineering Foundations project conventions
+alwaysApply: true
+---
+
+# Project rules
+
+- Repo teaches **systems internals** beneath governance/medallion skills — driver/executor, SQL relational model, indexing, Catalyst plans.
+- **Spark:** submittable jobs on the local standalone Docker cluster (`make spark-submit`); not notebook-first. Never use `local[*]` for graded Module 04 work.
+- **Tests:** prove-it acceptance tests per exercise; `make check` must pass before claiming done.
+- **`docs/curriculum.md`** is the committed curriculum; **`references/`** is gitignored optional textbook extracts — paraphrase only; cite *Book — Chapter N*; no long verbatim paste into committed files.
+- **Commands:** WSL at repo root — `make setup`, `make up`, `make seed`, `make load-sql`, `make check`. See `CLAUDE.md`.
+- **Package:** import `def_` from `src/def_/`; shared Spark/IO in `def_.common`.
+- **Scope:** first pass built modules 02 + 04 + datagen; other modules are README + stub tests only unless asked to expand.
 </file>
 
 <file path=".gitignore">
@@ -1857,26 +3648,449 @@ data/
 .venv/
 </file>
 
+<file path="CLAUDE.md">
+# Data Engineering Foundations
+
+Hands-on repo closing the gap between **analytics delivery** (SQL, BI, warehousing) and **systems internals** (Spark cluster model, SQL tuning, streaming, lakehouse patterns). Graded artifacts are **runnable jobs + passing tests**, not notebooks.
+
+## Commands (WSL/macOS/Linux from repo root; native Windows: `.\tasks.ps1 <target>`)
+
+| Command | Purpose |
+|---------|---------|
+| `make setup` | `uv sync` + pre-commit hooks |
+| `make up` / `make down` | Docker: Spark (1 master, 2 workers), Postgres 16, Kafka KRaft |
+| `make up-cloud` / `make down-cloud` | Module 09 cloud emulators (LocalStack/fake-gcs/Azurite) |
+| `make seed` | Generate star-schema Parquet (~0.01 GB) |
+| `make seed-large` | ~1 GB for shuffle/OOM labs |
+| `make load-sql` | Load Parquet into Postgres + apply SQL |
+| `make spark-submit JOB=path/to/job.py` | Submit to **standalone cluster** (not `local[*]`) |
+| `make oom-lab` | Module 04 OOM exercise (expect failure) |
+| `make sql` | psql shell |
+| `make lint` / `make typecheck` / `make test` | Quality gates |
+| `make test-cloud` | Module 09 roundtrip (`uv sync --extra cloud` + `make up-cloud`) |
+| `make check` | lint + typecheck + test |
+
+## Stack
+
+- Python 3.12, **uv**, package `def_` under `src/def_/`
+- **ruff**, **mypy** (strict on `src/def_/`), **pytest**
+- Local Docker only — no real cloud APIs (Module 09 uses **local emulators**: LocalStack/fake-gcs/Azurite)
+- **duckdb** for Module 05 warehousing exercises; **PySpark** on Bitnami Spark 3.5 cluster
+- Cloud backends (`fsspec`, `s3fs`, `gcsfs`, `adlfs`) are an optional extra: `uv sync --extra cloud`
+
+## Layout
+
+- `src/def_/common/` — Spark session builder, Postgres DSN, paths (cluster-first)
+- `src/def_/datagen/` — Kimball-style retail star schema, `--scale-gb`
+- `modules/NN_*/` — learning units 01–09; exercises + tests in-module
+- `src/def_/common/storage.py` — multi-cloud fsspec abstraction (Module 09)
+- `docs/curriculum.md` — committed curriculum and reading lists
+- `references/` — **gitignored** optional local textbook extracts only; never commit
+- `data/` — **gitignored** generated Parquet and explain artifacts
+
+## Principles
+
+1. **Real cluster over notebooks** — Spark jobs via `spark-submit` against `spark://localhost:7077`; inspect UI :8080 (cluster) and :4040 (app).
+2. **Prove it** — Every exercise has pytest acceptance criteria; integration tests skip when Docker is down.
+3. **Typed `src/`** — Fully annotated; `make typecheck` must pass before done.
+4. **Copyright** — Paraphrase concepts in READMEs; cite as *Book — Chapter N*; never paste long verbatim text from `references/`.
+
+## Spark session
+
+Use `def_.common.spark.build_spark_session(name, cluster=True)` for graded jobs. Do not default to `local[*]` except isolated unit tests.
+
+## Environment
+
+Copy `.env.example` → `.env`. Defaults match `infra/docker-compose.yml` (`def_user` / `def_learning`).
+
+## Module status
+
+- **Built:** 02 SQL, 04 Spark, 05 warehousing (SCD2/OLAP), 09 cloud portability, datagen, infra, agent files (07)
+- **Light:** 01 Python, 03 BI notes, 06 Kafka roundtrip, 08 medallion pipeline
+
+## UIs
+
+- Spark master: http://localhost:8080
+- Spark application: http://localhost:4040 (while a job runs)
+</file>
+
+<file path="Makefile">
+# Data Engineering Foundations — run from WSL at repo root.
+.PHONY: setup up down up-cloud down-cloud lint typecheck test test-cloud seed spark-submit sql check load-sql oom-lab
+
+UV := uv
+COMPOSE := docker compose -f infra/docker-compose.yml
+PYTHONPATH := src:.
+
+export PYTHONPATH
+
+setup:
+	$(UV) sync --all-groups
+	$(UV) run pre-commit install
+
+up:
+	$(COMPOSE) up -d
+	@echo "Spark master UI: http://localhost:8080"
+	@echo "Spark app UI (when job runs): http://localhost:4040"
+
+down:
+	$(COMPOSE) down
+
+up-cloud:
+	$(COMPOSE) --profile cloud up -d localstack fake-gcs azurite
+	@echo "LocalStack S3: http://localhost:4566  | fake-gcs: http://localhost:4443  | Azurite: http://localhost:10000"
+
+down-cloud:
+	$(COMPOSE) --profile cloud down
+
+lint:
+	$(UV) run ruff check src modules tests
+	$(UV) run ruff format --check src modules tests
+
+typecheck:
+	$(UV) run mypy
+
+test:
+	$(UV) run pytest -m "not spark and not kafka and not cloud" \
+		--ignore=modules/04_spark_internals/tests \
+		--ignore=modules/06_streaming_kafka/tests
+
+test-cloud:
+	$(UV) run pytest modules/09_cloud_portability/tests -m cloud
+
+test-all:
+	$(UV) run pytest
+
+seed:
+	$(UV) run python -m def_.datagen.cli --scale-gb 0.01
+
+seed-large:
+	$(UV) run python -m def_.datagen.cli --scale-gb 1.0
+
+load-sql:
+	$(UV) run python modules/02_sql_relational/load_to_postgres.py
+
+sql:
+	PGPASSWORD=$${POSTGRES_PASSWORD:-def_pass} psql -h $${POSTGRES_HOST:-localhost} -p $${POSTGRES_PORT:-5432} -U $${POSTGRES_USER:-def_user} -d $${POSTGRES_DB:-def_learning}
+
+spark-submit:
+	@test -n "$(JOB)" || (echo "Usage: make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py" && exit 1)
+	$(COMPOSE) exec -T -e PYTHONPATH=/workspace/src spark-master spark-submit \
+		--master spark://spark-master:7077 \
+		--deploy-mode client \
+		--conf spark.driver.host=spark-master \
+		--conf spark.driver.bindAddress=0.0.0.0 \
+		/workspace/$(JOB)
+
+oom-lab:
+	@echo "WARNING: This job is designed to fail with executor OOM. Run only when cluster is up."
+	$(MAKE) spark-submit JOB=modules/04_spark_internals/oom_exercise.py
+
+check: lint typecheck test
+</file>
+
+<file path="modules/01_python_model/README.md">
+# Module 01 — Python Language Model
+
+**Status:** light
+
+## What's in this folder
+
+- `exercises.py` — `MutableDemo`, `Vector2`, `MiniSequence`
+- `tests/test_python_model.py` — prove-it tests
+
+## Infrastructure
+
+Local Python only (no Docker services).
+
+## Run
+
+```bash
+uv run pytest modules/01_python_model/tests
+```
+
+## Prove-it exercises
+
+1. **Mutability drill** — list/dict mutation vs frozen `Vector2`
+2. **Dunder methods** — `__repr__`, `__eq__`, `__hash__` on `Vector2`
+3. **Data model API** — `MiniSequence` supports `len`, indexing, iteration
+
+## Further reading
+
+[`docs/curriculum.md` — Repo module 01](../../docs/curriculum.md#repo-module-01--python-language-model)
+</file>
+
+<file path="modules/04_spark_internals/README.md">
+# Module 04 — Distributed Systems & Apache Spark Internals
+
+## What's in this folder
+
+- `join_aggregate_job.py` — cluster join/aggregate + explain artifact
+- `oom_exercise.py` — intentional OOM lab
+- `tests/test_spark_slice.py` — Spark integration tests (`-m spark`)
+
+## Infrastructure
+
+Docker: **spark-master**, **spark-worker-1**, **spark-worker-2** (`infra/docker-compose.yml`). Reads Parquet from `data/` (via `make seed`).
+
+## Run
+
+```bash
+make up
+make seed        # use make seed-large for shuffle-heavy runs
+make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
+make oom-lab     # expect failure
+uv run pytest modules/04_spark_internals/tests -m spark
+```
+
+- Cluster UI: http://localhost:8080
+- Application UI: http://localhost:4040 (while a job runs)
+
+## Prove-it exercises (this pass)
+
+1. **Cluster join/aggregate** — Run `make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py`. Acceptance: job completes on standalone cluster; `data/explain/join_aggregate.txt` contains a physical plan with shuffle/exchange.
+2. **Read the Spark UI** — Acceptance: you can point to **Jobs → Stages → Tasks** and identify the shuffle stage.
+3. **Catalyst plans** — Acceptance: you can name where Catalyst optimization appears in the formatted explain file.
+4. **OOM lab** — Run `make oom-lab` (expect failure). Acceptance: explain skew + shuffle + low executor memory; document fix (broadcast join, repartition, `spark.executor.memory`).
+
+## Logical vs physical plan (walkthrough)
+
+1. **Logical plan** — Unresolved/reresolved logical nodes (joins, aggregates).
+2. **Catalyst** — Rule-based optimizer rewrites the logical plan (filter pushdown, constant folding).
+3. **Physical plan** — Concrete operators (`Exchange`, `SortAggregate`, `BroadcastHashJoin`) scheduled as jobs → stages → tasks on executors.
+
+## Further reading
+
+[`docs/curriculum.md` — Repo module 04](../docs/curriculum.md#repo-module-04--spark-internals)
+</file>
+
+<file path="modules/04_spark_internals/tests/test_spark_slice.py">
+"""Prove-it tests for Module 04 — Spark cluster integration."""
+
+from __future__ import annotations
+
+import os
+import socket
+import subprocess
+from pathlib import Path
+
+import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+EXPLAIN_FILE = Path(os.environ.get("DATA_DIR", "data")) / "explain" / "join_aggregate.txt"
+
+
+def _spark_master_reachable() -> bool:
+    host = os.environ.get("SPARK_MASTER_HOST", "localhost")
+    port = int(os.environ.get("SPARK_MASTER_PORT", "7077"))
+    try:
+        with socket.create_connection((host, port), timeout=2):
+            return True
+    except OSError:
+        return False
+
+
+@pytest.mark.spark
+def test_explain_artifact_after_submit() -> None:
+    if not _spark_master_reachable():
+        pytest.skip("Spark master not reachable — run: make up")
+
+    job = REPO_ROOT / "modules" / "04_spark_internals" / "join_aggregate_job.py"
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(REPO_ROOT / "src")
+    env["SPARK_MASTER_URL"] = os.environ.get("SPARK_MASTER_URL", "spark://localhost:7077")
+
+    result = subprocess.run(
+        [
+            "docker",
+            "compose",
+            "-f",
+            "infra/docker-compose.yml",
+            "exec",
+            "-T",
+            "-e",
+            "PYTHONPATH=/workspace/src",
+            "spark-master",
+            "spark-submit",
+            "--master",
+            "spark://spark-master:7077",
+            "--deploy-mode",
+            "client",
+            "--conf",
+            "spark.driver.host=spark-master",
+            "--conf",
+            "spark.driver.bindAddress=0.0.0.0",
+            f"/workspace/{job.relative_to(REPO_ROOT).as_posix()}",
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=300,
+        check=False,
+    )
+    if result.returncode != 0:
+        pytest.fail(f"spark-submit failed:\n{result.stderr}\n{result.stdout}")
+
+    assert EXPLAIN_FILE.exists(), "Run join_aggregate_job to produce explain file"
+    content = EXPLAIN_FILE.read_text(encoding="utf-8")
+    assert len(content) > 50
+    assert any(kw in content.lower() for kw in ("shuffle", "exchange", "aggregate", "join"))
+
+
+def test_explain_file_exists_or_skip() -> None:
+    """Fast check when explain artifact already present from manual run."""
+    if EXPLAIN_FILE.exists():
+        assert (
+            "Physical Plan" in EXPLAIN_FILE.read_text(encoding="utf-8")
+            or len(EXPLAIN_FILE.read_text(encoding="utf-8")) > 100
+        )
+    elif not _spark_master_reachable():
+        pytest.skip("No explain file and Spark not up")
+</file>
+
+<file path="modules/06_streaming_kafka/README.md">
+# Module 06 — Event Streaming & Kafka
+
+**Status:** light
+
+## What's in this folder
+
+- `roundtrip.py` — produce/consume JSON on topic `def_learning_events`
+- `tests/test_kafka_roundtrip.py` — integration test (`-m kafka`)
+
+## Infrastructure
+
+Docker service: **kafka** (`infra/docker-compose.yml`, `localhost:9092`).
+
+## Run
+
+```bash
+make up
+uv run python modules/06_streaming_kafka/roundtrip.py
+uv run pytest modules/06_streaming_kafka/tests -m kafka
+```
+
+## Prove-it exercises
+
+1. **Produce/consume** — `roundtrip.py` receives all messages for a run id
+2. **Consumer groups** — each run uses an isolated group id (`def_learning_roundtrip_<uuid>`)
+
+## Further reading
+
+[`docs/curriculum.md` — Repo module 06](../../docs/curriculum.md#repo-module-06--kafka)
+</file>
+
+<file path="pyproject.toml">
+[project]
+name = "data-engineering-foundations"
+version = "0.1.0"
+description = "Hands-on data engineering foundations — prove-it modules with local Docker infra"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.1.0",
+    "kafka-python>=2.0.2",
+    "psycopg[binary]>=3.2.0",
+    "pyarrow>=18.0.0",
+    "pyspark>=3.5.0,<4",
+]
+
+[project.optional-dependencies]
+# Module 09 — multi-cloud object storage via fsspec backends (local emulators).
+cloud = [
+    "fsspec>=2024.9.0",
+    "s3fs>=2024.9.0",
+    "gcsfs>=2024.9.0",
+    "adlfs>=2024.7.0",
+]
+dev = [
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+    "types-psycopg2>=2.9.21.20240819",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/def_"]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13.0",
+    "pre-commit>=4.0.0",
+    "pytest>=8.3.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "modules", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src/def_"]
+mypy_path = "src"
+explicit_package_bases = true
+namespace_packages = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["pyspark.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "modules"]
+pythonpath = ["src", "."]
+markers = [
+    "integration: integration tests requiring docker services",
+    "postgres: requires Postgres from docker compose",
+    "spark: requires Spark cluster from docker compose",
+    "kafka: requires Kafka broker from docker compose",
+    "cloud: requires cloud emulators (localstack/azurite/fake-gcs) from docker compose",
+]
+addopts = "-ra --tb=short"
+
+[tool.coverage.run]
+source = ["def_"]
+omit = ["*/tests/*"]
+</file>
+
 <file path="README.md">
 # Data Engineering Foundations
 
-A hands-on learning repository that closes the gap between **applied data governance** (medallion, lineage, quality) and the **systems-internals layer** underneath: Spark driver/executors and the DAG, SQL views/CTEs and index tuning, dimensional modeling at scale.
+Hands-on repo bridging **applied analytics** (SQL, BI, warehousing) and **systems internals** (Spark, SQL tuning, streaming, lakehouse patterns). Assessment is **prove-it**: runnable jobs, captured plans, and passing pytest.
 
-Assessment is **prove-it**: runnable jobs, captured plans, and passing pytest — not recall.
+## Start here
 
-## Prerequisites
+- **[Setup](docs/setup.md)** — WSL, Windows, `uv`, Docker (`infra/`), and `make` commands
+- **[Curriculum](docs/curriculum.md)** — tiered reading lists and sequencing (committed in `docs/`)
+- **[Modules & labs](docs/modules.md)** — which folder, which services, which commands
+- **[Module folders](modules/README.md)** — direct links to exercises and READMEs
 
-- [Docker](https://docs.docker.com/get-docker/) with Compose
-- [WSL2](https://learn.microsoft.com/en-us/windows/wsl/) (recommended on Windows)
-- [uv](https://docs.astral.sh/uv/) (Python 3.12)
+Optional local textbook extracts only: `references/` (gitignored). Do not commit publisher material there.
 
-Place the curriculum and textbook extracts in `references/` (gitignored). See `references/big_data_engineering_curriculum_md.md` for the full module map.
+## Learner path
 
-## Quickstart (< 10 commands)
+1. [README.md](README.md) — you are here
+2. [docs/setup.md](docs/setup.md) — WSL, Docker, `uv`, `make`
+3. [docs/modules.md](docs/modules.md) — which service and commands per module
+4. [modules/NN_*/README.md](modules/README.md) — exercises for the module you are on (e.g. [02 SQL](modules/02_sql_relational/README.md))
+5. [docs/curriculum.md](docs/curriculum.md) — reading lists when you need depth
 
-Run from **WSL** at the repo root (e.g. `/mnt/c/GitHub/data-engineering`). Without `make`, use `uv run` equivalents (see `Makefile`).
+## Quickstart
 
-**Windows (no WSL):** `py -3.12 -m uv sync --all-groups`, then `.\\.venv\\Scripts\\python.exe -m pytest` with `$env:PYTHONPATH="src"`.
+Run from **WSL** at the repo root. See [setup](docs/setup.md) for Windows without WSL.
 
 ```bash
 cp .env.example .env
@@ -1889,42 +4103,55 @@ make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
 make check
 ```
 
-- Postgres: `localhost:5432` — db `def_learning`, user `def_user`
-- Spark master UI: http://localhost:8080
-- Spark app UI (during a job): http://localhost:4040
+**Native Windows (no WSL)** — same steps via the PowerShell task runner:
 
-## Modules
+```powershell
+Copy-Item .env.example .env
+.\tasks.ps1 setup
+.\tasks.ps1 up
+.\tasks.ps1 seed
+.\tasks.ps1 test
+```
 
-| Module | Status | Topic |
-|--------|--------|-------|
-| [01_python_model](modules/01_python_model/) | stub | Python data model |
-| [02_dsa](modules/02_dsa/) | stub | Algorithms |
-| [03_sql_relational](modules/03_sql_relational/) | **built** | Views, recursive CTEs, indexing |
-| [04_spark_internals](modules/04_spark_internals/) | **built** | Cluster jobs, Catalyst, OOM lab |
-| [05_warehousing_bi](modules/05_warehousing_bi/) | stub | Kimball / DuckDB |
-| [06_streaming_kafka](modules/06_streaming_kafka/) | stub | Kafka KRaft |
-| [07_oop_design_patterns](modules/07_oop_design_patterns/) | stub | OOP / patterns |
-| [08_ai_assisted_dev](modules/08_ai_assisted_dev/) | agent files | CLAUDE.md, Cursor rules |
-| [09_capstone_governance](modules/09_capstone_governance/) | stub | Governance at scale |
+### Cloud module (09)
+
+```bash
+uv sync --extra cloud        # install fsspec backends (s3fs/gcsfs/adlfs)
+make up-cloud                # LocalStack + fake-gcs + Azurite
+uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud aws
+make test-cloud
+make down-cloud
+```
+
+## Modules (01–09)
+
+**DSA** is studied in a **separate repository**, in parallel with repo module 02 (SQL).
+
+- **01** [Python](modules/01_python_model/) · light
+- **02** [SQL](modules/02_sql_relational/) · **built**
+- **03** [BI](modules/03_bi_tools/) · light
+- **04** [PySpark](modules/04_spark_internals/) · **built**
+- **05** [Warehousing](modules/05_warehousing/) · **built**
+- **06** [Kafka](modules/06_streaming_kafka/) · light
+- **07** [AI-assisted](modules/07_ai_assisted_dev/) · agent files
+- **08** [Lakehouse](modules/08_lakehouse_medallion/) · light
+- **09** [Cloud portability (AWS/GCP/Azure)](modules/09_cloud_portability/) · **built**
 
 ## Scale knob
 
-Generate larger data for shuffle/spill practice:
-
 ```bash
-make seed-large   # ~1 GB
-# or
-uv run python -m def_.datagen.cli --scale-gb 2.0
+make seed-large
+# or: uv run python -m def_.datagen.cli --scale-gb 2.0
 ```
 
 ## Agent context
 
-- [`CLAUDE.md`](CLAUDE.md) — commands and conventions for AI assistants
-- [`.cursor/rules/`](.cursor/rules/) — Cursor project rules
+- [`CLAUDE.md`](CLAUDE.md)
+- [`.cursor/rules/`](.cursor/rules/)
 
 ## License
 
-Learning use. Textbook content stays in local `references/` only.
+Learning use. Keep long textbook paste in local `references/` only.
 </file>
 
 </files>

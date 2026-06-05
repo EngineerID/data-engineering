@@ -13,6 +13,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Module 09 — multi-cloud object storage via fsspec backends (local emulators).
+cloud = [
+    "fsspec>=2024.9.0",
+    "s3fs>=2024.9.0",
+    "gcsfs>=2024.9.0",
+    "adlfs>=2024.7.0",
+]
 dev = [
     "mypy>=1.13.0",
     "pre-commit>=4.0.0",
@@ -67,6 +74,7 @@ markers = [
     "postgres: requires Postgres from docker compose",
     "spark: requires Spark cluster from docker compose",
     "kafka: requires Kafka broker from docker compose",
+    "cloud: requires cloud emulators (localstack/azurite/fake-gcs) from docker compose",
 ]
 addopts = "-ra --tb=short"
 

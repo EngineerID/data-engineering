@@ -103,3 +103,40 @@ services:
       timeout: 10s
       retries: 10
       start_period: 30s
+
+  # --- Module 09 cloud emulators (profile "cloud"; not started by plain `make up`) ---
+  # Local-only S3 / GCS / Blob. No real cloud, no credentials, no spend.
+  localstack:
+    image: localstack/localstack:3
+    container_name: def-localstack
+    profiles: ["cloud"]
+    environment:
+      - SERVICES=s3
+      - DEBUG=0
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  fake-gcs:
+    image: fsouza/fake-gcs-server:latest
+    container_name: def-fake-gcs
+    profiles: ["cloud"]
+    command: ["-scheme", "http", "-port", "4443", "-public-host", "localhost:4443"]
+    ports:
+      - "4443:4443"
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: def-azurite
+    profiles: ["cloud"]
+    # --skipApiVersionCheck: Azurite's supported API version lags the azure-storage
+    # SDK shipped with adlfs; without this the client's newer x-ms-version is rejected.
+    command:
+      ["azurite-blob", "--blobHost", "0.0.0.0", "--blobPort", "10000", "--skipApiVersionCheck"]
+    ports:
+      - "10000:10000"

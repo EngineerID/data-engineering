@@ -34,7 +34,27 @@ make spark-submit JOB=modules/04_spark_internals/join_aggregate_job.py
 make check
 ```
 
-## Modules (01–08)
+**Native Windows (no WSL)** — same steps via the PowerShell task runner:
+
+```powershell
+Copy-Item .env.example .env
+.\tasks.ps1 setup
+.\tasks.ps1 up
+.\tasks.ps1 seed
+.\tasks.ps1 test
+```
+
+### Cloud module (09)
+
+```bash
+uv sync --extra cloud        # install fsspec backends (s3fs/gcsfs/adlfs)
+make up-cloud                # LocalStack + fake-gcs + Azurite
+uv run python modules/09_cloud_portability/object_store_roundtrip.py --cloud aws
+make test-cloud
+make down-cloud
+```
+
+## Modules (01–09)
 
 **DSA** is studied in a **separate repository**, in parallel with repo module 02 (SQL).
 
@@ -42,10 +62,11 @@ make check
 - **02** [SQL](modules/02_sql_relational/) · **built**
 - **03** [BI](modules/03_bi_tools/) · light
 - **04** [PySpark](modules/04_spark_internals/) · **built**
-- **05** [Warehousing](modules/05_warehousing/) · light
+- **05** [Warehousing](modules/05_warehousing/) · **built**
 - **06** [Kafka](modules/06_streaming_kafka/) · light
 - **07** [AI-assisted](modules/07_ai_assisted_dev/) · agent files
 - **08** [Lakehouse](modules/08_lakehouse_medallion/) · light
+- **09** [Cloud portability (AWS/GCP/Azure)](modules/09_cloud_portability/) · **built**
 
 ## Scale knob
 
