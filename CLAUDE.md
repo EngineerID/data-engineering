@@ -2,23 +2,23 @@
 
 Hands-on repo closing the gap between **analytics delivery** (SQL, BI, warehousing) and **systems internals** (Spark cluster model, SQL tuning, streaming, lakehouse patterns). Graded artifacts are **runnable jobs + passing tests**, not notebooks.
 
+> **House rule — no pipe tables.** Every Markdown file in this repo (READMEs, notes, docs) uses clean prose and bullet lists, **never GitHub pipe tables**. Convert any table you touch on sight. Full rationale in [Principles](#principles) §5.
+
 ## Commands (WSL/macOS/Linux from repo root; native Windows: `.\tasks.ps1 <target>`)
 
-| Command | Purpose |
-|---------|---------|
-| `make setup` | `uv sync` + pre-commit hooks |
-| `make up` / `make down` | Docker: Spark (1 master, 2 workers), Postgres 16, Kafka KRaft |
-| `make up-cloud` / `make down-cloud` | Module 09 cloud emulators (LocalStack/fake-gcs/Azurite) |
-| `make seed` | Generate star-schema Parquet (~0.01 GB) |
-| `make seed-large` | ~1 GB for shuffle/OOM labs |
-| `make load-sql` | Load Parquet into Postgres + apply SQL |
-| `make spark-submit JOB=path/to/job.py` | Submit to **standalone cluster** (not `local[*]`) |
-| `make oom-lab` | Module 04 OOM exercise (expect failure) |
-| `make sql` | psql shell |
-| `make lint` / `make typecheck` / `make test` | Quality gates |
-| `make test-cloud` | Module 09 roundtrip (`uv sync --extra cloud` + `make up-cloud`) |
-| `make dbt-run` / `make test-dbt` | Module 10 dbt build + catalog (`uv sync --extra dbt`) |
-| `make check` | lint + typecheck + test |
+- `make setup` — `uv sync` + pre-commit hooks
+- `make up` / `make down` — Docker: Spark (1 master, 2 workers), Postgres 16, Kafka KRaft
+- `make up-cloud` / `make down-cloud` — Module 09 cloud emulators (LocalStack/fake-gcs/Azurite)
+- `make seed` — Generate star-schema Parquet (~0.01 GB)
+- `make seed-large` — ~1 GB for shuffle/OOM labs
+- `make load-sql` — Load Parquet into Postgres + apply SQL
+- `make spark-submit JOB=path/to/job.py` — Submit to **standalone cluster** (not `local[*]`)
+- `make oom-lab` — Module 04 OOM exercise (expect failure)
+- `make sql` — psql shell
+- `make lint` / `make typecheck` / `make test` — Quality gates
+- `make test-cloud` — Module 09 roundtrip (`uv sync --extra cloud` + `make up-cloud`)
+- `make dbt-run` / `make test-dbt` — Module 10 dbt build + catalog (`uv sync --extra dbt`)
+- `make check` — lint + typecheck + test
 
 ## Stack
 
@@ -38,6 +38,7 @@ Hands-on repo closing the gap between **analytics delivery** (SQL, BI, warehousi
 - `src/def_/common/storage.py` — multi-cloud fsspec abstraction (Module 09)
 - `modules/10_dbt_orchestration/dbt_project/` — dbt models, tests, catalog (Module 10)
 - `docs/curriculum.md` — committed curriculum and reading lists
+- `docs/progression.md` — canonical beginner→cap onboarding map (the at-a-glance module ladder; start sessions here)
 - `references/` — **gitignored** optional local textbook extracts only; never commit
 - `data/` — **gitignored** generated Parquet and explain artifacts
 

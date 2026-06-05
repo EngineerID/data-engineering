@@ -22,12 +22,10 @@ stewardship.
 
 ## Regulatory regimes (know which applies)
 
-| Regime | Scope | Core obligations (paraphrased) |
-|---|---|---|
-| **HIPAA** (US) | Protected Health Information | Safeguards, minimum-necessary access, de-identification (Safe Harbor / Expert Determination), breach notification |
-| **PIPEDA** (Canada) | Personal info in commercial activity | Consent, purpose limitation, access/correction rights, safeguards |
-| **GDPR** (EU) | Personal data | Lawful basis, data-subject rights, minimization, records of processing |
-| **BCBS 239** (banking) | Risk data aggregation | Accuracy, completeness, timeliness, and traceable lineage of risk reports |
+- **HIPAA** (US) — scope: Protected Health Information — obligations: safeguards, minimum-necessary access, de-identification (Safe Harbor / Expert Determination), breach notification
+- **PIPEDA** (Canada) — scope: personal info in commercial activity — obligations: consent, purpose limitation, access/correction rights, safeguards
+- **GDPR** (EU) — scope: personal data — obligations: lawful basis, data-subject rights, minimization, records of processing
+- **BCBS 239** (banking) — scope: risk data aggregation — obligations: accuracy, completeness, timeliness, and traceable lineage of risk reports
 
 The portable skill: identify the regime, then implement the same primitives —
 classification, access control, de-identification, retention, and lineage.

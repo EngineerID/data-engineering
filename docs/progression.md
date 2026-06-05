@@ -47,7 +47,9 @@ This is where the DBA-leaning role carries the most weight — invest most here.
 - **04 Spark internals** — [`modules/04_spark_internals/`](../modules/04_spark_internals/) ·
   driver/executor model · DAG → jobs/stages/tasks · shuffle · OOM intuition.
 - **03 Power BI concepts** — [`modules/03_bi_tools/`](../modules/03_bi_tools/) ·
-  storage modes · measure-vs-column · dynamic RLS.
+  storage modes · measure-vs-column · dynamic RLS. (Despite sitting at Level 3, Power BI
+  ranks among the role's heaviest-weight topics per [`scope-cap.md`](scope-cap.md); it
+  lands here only because it builds on the Level 2 dimensional model.)
 - **06 Kafka** — [`modules/06_streaming_kafka/`](../modules/06_streaming_kafka/) ·
   producer/consumer roundtrip + streaming concepts (event-time/windows/watermarks).
 

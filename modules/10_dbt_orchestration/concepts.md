@@ -16,11 +16,9 @@ gold) shape as the medallion pipeline in module 08, expressed declaratively.
 `run_pipeline.py` runs the steps in order in-process. In production the *same*
 ordered steps are scheduled:
 
-| Orchestrator | How the DAG is expressed |
-|---|---|
-| **Airflow** | a `DAG` of `BashOperator`/`DbtRunOperator` tasks, scheduled by cron-like intervals |
-| **Dagster** | software-defined *assets*; dbt models become assets via `dagster-dbt` |
-| **GitLab CI / GitHub Actions** | pipeline *stages* (`seed → build → test → docs`) in YAML, triggered on push/schedule |
+- **Airflow** — a `DAG` of `BashOperator`/`DbtRunOperator` tasks, scheduled by cron-like intervals
+- **Dagster** — software-defined *assets*; dbt models become assets via `dagster-dbt`
+- **GitLab CI / GitHub Actions** — pipeline *stages* (`seed → build → test → docs`) in YAML, triggered on push/schedule
 
 The skill is recognizing that "orchestration" is just *dependency ordering +
 scheduling + retries + observability* over tasks you already have. Reading a
@@ -61,11 +59,9 @@ also how you do impact analysis ("if I change this source, what breaks?").
 
 dbt models are warehouse-agnostic SQL; you change the **adapter**, not the models:
 
-| Adapter | Engine | Used here |
-|---|---|---|
-| `dbt-duckdb` | DuckDB (local) | ✅ this lab |
-| `dbt-bigquery` | Google BigQuery | swap profile to run the same models in BQ |
-| `dbt-snowflake`, `dbt-redshift`, `dbt-databricks` | other cloud warehouses | same models |
+- `dbt-duckdb` — DuckDB (local) · ✅ this lab
+- `dbt-bigquery` — Google BigQuery · swap profile to run the same models in BQ
+- `dbt-snowflake`, `dbt-redshift`, `dbt-databricks` — other cloud warehouses · same models
 
 **BigQuery specifics worth knowing** (they map to local equivalents you can
 reason about with DuckDB/Parquet):

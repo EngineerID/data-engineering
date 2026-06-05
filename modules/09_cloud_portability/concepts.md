@@ -15,14 +15,14 @@ Engineering* and the cloud provider docs. Do not paste long vendor text.
 
 ## The three clouds, mapped
 
-| Concept | AWS | GCP | Azure |
-|---|---|---|---|
-| Object store | S3 | Cloud Storage (GCS) | Blob / ADLS Gen2 |
-| Bucket/container | bucket | bucket | container |
-| Identity | IAM | IAM | Entra ID + RBAC / SAS |
-| Managed Spark | EMR / Glue | Dataproc | Synapse / Databricks |
-| Warehouse | Redshift | BigQuery | Synapse / Fabric |
-| Catalog | Glue Data Catalog | Dataplex | Unity Catalog / Purview |
+Each row is *concept — AWS · GCP · Azure*:
+
+- **Object store** — S3 · Cloud Storage (GCS) · Blob / ADLS Gen2
+- **Bucket/container** — bucket · bucket · container
+- **Identity** — IAM · IAM · Entra ID + RBAC / SAS
+- **Managed Spark** — EMR / Glue · Dataproc · Synapse / Databricks
+- **Warehouse** — Redshift · BigQuery · Synapse / Fabric
+- **Catalog** — Glue Data Catalog · Dataplex · Unity Catalog / Purview
 
 ## Where the abstraction leaks
 

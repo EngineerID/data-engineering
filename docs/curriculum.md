@@ -4,13 +4,23 @@
 
 Hands-on labs in this repository: [`docs/modules.md`](modules.md) · setup: [`docs/setup.md`](setup.md). For the at-a-glance ladder, see [`progression.md`](progression.md).
 
+> **Scope note — broad reference vs. this repo's cap.** This curriculum is the *broad
+> 0→senior reference*: the full competency map and reading lists. **This repo**, however,
+> is deliberately **capped** at interview-prep depth per [`scope-cap.md`](scope-cap.md),
+> and its in-repo prioritization differs from the generic big-data path. For the
+> DBA-leaning target role, **SQL + dimensional modeling carry the heaviest weight and
+> Spark is secondary** — see [`scope-cap.md`](scope-cap.md) and the rungs in
+> [`progression.md`](progression.md). Where sentences below call Spark "the keystone" or
+> "largest investment," read that as *for a PySpark / big-data role*, not as this repo's
+> own ranking.
+
 ---
 
 ## Who this is for and how to use it
 
 - **Complete beginners** — start at Tier A (modules 01–03) and work strictly in order; do every lab.
 - **Working analysts / data scientists** moving toward data engineering — skim Tier A for gaps, invest in Tier B (the Spark/warehousing/streaming core).
-- **Engineers targeting senior big-data roles** — the keystone is module 04 (Spark internals); Tier C is the architecture/research extension.
+- **Engineers targeting senior big-data / PySpark roles** — for that role the keystone is module 04 (Spark internals); Tier C is the architecture/research extension. (For this repo's own DBA-leaning prioritization, SQL + dimensional modeling carry the heaviest weight — see the scope note above.)
 
 **What "data engineering" means here:** building the systems that move, store, transform, and serve data reliably and at scale — the relational and dimensional models beneath analytics, the distributed execution model beneath Spark, the streaming and lakehouse patterns beneath modern platforms, and the governance that keeps it trustworthy. This curriculum teaches each of those from first principles, not as recipes.
 
@@ -296,25 +306,23 @@ A pass over the modules plus typical senior job requirements surfaces these. Sta
 
 ### Where specific job-requirement themes are exercised
 
-| Requirement theme | Where in the stack |
-|---|---|
-| SQL for data validation & reconciliation | repo 02 (views/CTEs/EXPLAIN) + repo 10 (dbt tests, referential `relationships`) |
-| Large datasets (100s of GB structured, TBs of documents) | repo 04 (Spark at scale, `make seed-large`) + repo 10 `concepts.md` (same pattern at any size) |
-| Many object schemas & complex relationships | repo 02 (recursive CTE / joins) + repo 10 (sources, `ref()`, relationships tests, lineage) |
-| GitLab CI/CD pipeline-YAML literacy | `.gitlab-ci.yml` + `.github/workflows/ci.yml` + repo 10 `concepts.md` |
-| BigQuery (SQL, table design, partitioning, optimization) | repo 10 `concepts.md` (adapter swap; partition/cluster/cost) + repo 05 (dimensional design) |
-| Healthcare data compliance (PIPEDA, HIPAA) | repo 08 `governance_compliance.md` |
-| Data catalog tools & metadata management | repo 10 (dbt manifest/catalog, lineage) |
-| Stakeholder engagement & analytical skills | repo 03 `notes/stakeholder_engagement.md` |
+- **SQL for data validation & reconciliation** — repo 02 (views/CTEs/EXPLAIN) + repo 10 (dbt tests, referential `relationships`)
+- **Large datasets (100s of GB structured, TBs of documents)** — repo 04 (Spark at scale, `make seed-large`) + repo 10 `concepts.md` (same pattern at any size)
+- **Many object schemas & complex relationships** — repo 02 (recursive CTE / joins) + repo 10 (sources, `ref()`, relationships tests, lineage)
+- **GitLab CI/CD pipeline-YAML literacy** — `.gitlab-ci.yml` + `.github/workflows/ci.yml` + repo 10 `concepts.md`
+- **BigQuery (SQL, table design, partitioning, optimization)** — repo 10 `concepts.md` (adapter swap; partition/cluster/cost) + repo 05 (dimensional design)
+- **Healthcare data compliance (PIPEDA, HIPAA)** — repo 08 `governance_compliance.md`
+- **Data catalog tools & metadata management** — repo 10 (dbt manifest/catalog, lineage)
+- **Stakeholder engagement & analytical skills** — repo 03 `notes/stakeholder_engagement.md`
 
 ---
 
 ## 3. Suggested sequencing & priority
 
-For learners targeting **PySpark / big-data engineering** roles, sequence to hit the keystone fastest while repairing foundations in parallel (repo module numbers):
+For learners targeting **PySpark / big-data engineering** roles, sequence to hit the keystone fastest while repairing foundations in parallel (repo module numbers). *DBA-leaning learners — this repo's primary target — should instead lead with SQL + dimensional modeling per [`progression.md`](progression.md); the Spark-first ordering below is for the big-data track:*
 
 1. **Weeks 1–4 (parallel):** Repo **01** (Python, including its data-manipulation patterns — decomposition, invariants, complexity) + repo **02** (SQL: views/CTEs) — quickest wins; build calibration early.
-2. **Weeks 3–10 (core):** Repo **04** (Spark internals) — largest investment; the module 01 data-manipulation patterns reinforce plan-reading and complexity reasoning alongside it.
+2. **Weeks 3–10 (core):** Repo **04** (Spark internals) — the largest investment *for the PySpark track*; the module 01 data-manipulation patterns reinforce plan-reading and complexity reasoning alongside it.
 3. **Weeks 8–12:** Repo **03** (BI) + repo **05** (warehousing) + repo **06** (Kafka) + repo **09** (cloud) + repo **10** (dbt / orchestration / catalog).
 4. **Throughout:** Repo **07** (AI-assisted engineering) — adopt a `CLAUDE.md` on day one.
 5. **Optional / role-dependent:** Curriculum Module 7 (Java/OOP) for JVM-stack roles.

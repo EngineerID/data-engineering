@@ -24,13 +24,13 @@ never by hand-editing.
 
 ## OLTP vs OLAP (be specific)
 
-| | OLTP | OLAP |
-|---|---|---|
-| Workload | many small reads/writes | few large aggregate scans |
-| Schema | normalized (3NF) | denormalized (star/snowflake) |
-| Storage | row-store | column-store |
-| Index | many narrow B-trees on lookup keys | fewer; sort/zone maps, partition pruning |
-| Tuning goal | latency per transaction | throughput per scan |
+Each row is *dimension — OLTP · OLAP*:
+
+- **Workload** — many small reads/writes · few large aggregate scans
+- **Schema** — normalized (3NF) · denormalized (star/snowflake)
+- **Storage** — row-store · column-store
+- **Index** — many narrow B-trees on lookup keys · fewer; sort/zone maps, partition pruning
+- **Tuning goal** — latency per transaction · throughput per scan
 
 Running heavy analytical queries on the OLTP box holds locks and trashes the buffer
 cache for the transactional workload. Fixes: a **read replica** for reporting, or ship
@@ -42,12 +42,12 @@ eventually consistent — reports can read slightly stale numbers (replication l
 `BEGIN; … COMMIT;` is all-or-nothing (Atomicity). Isolation levels trade correctness
 for concurrency:
 
-| Level | Dirty read | Non-repeatable | Phantom |
-|---|---|---|---|
-| READ UNCOMMITTED | yes | yes | yes |
-| READ COMMITTED *(default in PG/MSSQL)* | no | yes | yes |
-| REPEATABLE READ | no | no | yes (blocked in MySQL InnoDB) |
-| SERIALIZABLE | no | no | no |
+Each level lists which anomalies it *allows* — dirty read · non-repeatable read · phantom:
+
+- **READ UNCOMMITTED** — dirty: yes · non-repeatable: yes · phantom: yes
+- **READ COMMITTED** *(default in PG/MSSQL)* — dirty: no · non-repeatable: yes · phantom: yes
+- **REPEATABLE READ** — dirty: no · non-repeatable: no · phantom: yes (blocked in MySQL InnoDB)
+- **SERIALIZABLE** — dirty: no · non-repeatable: no · phantom: no
 
 **Deadlock** = two transactions each hold what the other needs; the engine kills one.
 Avoid by acquiring locks in a consistent order. Higher isolation = more correctness,

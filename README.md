@@ -5,6 +5,7 @@ Hands-on repo bridging **applied analytics** (SQL, BI, warehousing) and **system
 ## Start here
 
 - **[Setup](docs/setup.md)** — WSL, Windows, `uv`, Docker (`infra/`), and `make` commands
+- **[Progression](docs/progression.md)** — the beginner→cap onboarding ladder on one page
 - **[Curriculum](docs/curriculum.md)** — tiered reading lists and sequencing (committed in `docs/`)
 - **[Modules & labs](docs/modules.md)** — which folder, which services, which commands
 - **[Module folders](modules/README.md)** — direct links to exercises and READMEs
