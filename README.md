@@ -14,10 +14,11 @@ Optional local textbook extracts only: `references/` (gitignored). Do not commit
 ## Learner path
 
 1. [README.md](README.md) — you are here
-2. [docs/setup.md](docs/setup.md) — WSL, Docker, `uv`, `make`
-3. [docs/modules.md](docs/modules.md) — which service and commands per module
-4. [modules/NN_*/README.md](modules/README.md) — exercises for the module you are on (e.g. [02 SQL](modules/02_sql_relational/README.md))
-5. [docs/curriculum.md](docs/curriculum.md) — reading lists when you need depth
+2. [docs/progression.md](docs/progression.md) — the absolute-beginner → cap ladder on one page
+3. [docs/setup.md](docs/setup.md) — WSL, Docker, `uv`, `make`
+4. [docs/modules.md](docs/modules.md) — which service and commands per module
+5. [modules/NN_*/README.md](modules/README.md) — exercises for the module you are on (e.g. [02 SQL](modules/02_sql_relational/README.md))
+6. [docs/curriculum.md](docs/curriculum.md) — reading lists when you need depth
 
 ## Quickstart
 
@@ -63,8 +64,6 @@ make test-dbt
 ```
 
 ## Modules (01–10)
-
-**DSA** is studied in a **separate repository**, in parallel with repo module 02 (SQL).
 
 - **01** [Python](modules/01_python_model/) · light (by design — least role-relevant)
 - **02** [SQL](modules/02_sql_relational/) · **built**

@@ -1,8 +1,8 @@
 # Modules and labs
 
-Each folder under [`modules/`](../modules/) is a prove-it unit. **DSA** (algorithms) *concepts* now have a home in module 01's `notes/array-string-patterns.md`; graded DSA practice still lives in a **separate repository**, run in parallel with repo module 02.
+Each folder under [`modules/`](../modules/) is a prove-it unit. The algorithmic reasoning the role needs is taught as **Python data-manipulation patterns** in module 01's `notes/array-string-patterns.md`, derived backward from the data-engineering work — not as a standalone DSA discipline.
 
-- **01 — Python** · [01_python_model](../modules/01_python_model/) · light infra + concept ramp · local only · notes: `python-foundations.md` (never-programmed on-ramp), `array-string-patterns.md` (DSA track) → `exercises.py` (data model) · `uv run pytest modules/01_python_model/tests`
+- **01 — Python** · [01_python_model](../modules/01_python_model/) · light infra + concept ramp · local only · notes: `python-foundations.md` (never-programmed on-ramp), `array-string-patterns.md` (Python data-manipulation patterns) → `exercises.py` (data model) · `uv run pytest modules/01_python_model/tests`
 - **02 — SQL** · [02_sql_relational](../modules/02_sql_relational/) · **built** · `postgres` · notes: `sql-foundations.md`, `sql-patterns.md` (analytical patterns → runnable views) · `make seed`, `make up`, `make load-sql`, `make sql` · artifacts: `data/sql_plans/`
 - **03 — BI** · [03_bi_tools](../modules/03_bi_tools/) · **built** (concepts) · local notes · Power BI storage modes / measure-vs-column / dynamic RLS · `uv run pytest modules/03_bi_tools/tests`
 - **04 — PySpark** · [04_spark_internals](../modules/04_spark_internals/) · **built** · `spark-master`, workers · `make up`, `make seed`, `make spark-submit`, `make oom-lab` · artifacts: `data/explain/`
@@ -13,6 +13,7 @@ Each folder under [`modules/`](../modules/) is a prove-it unit. **DSA** (algorit
 - **09 — Cloud portability** · [09_cloud_portability](../modules/09_cloud_portability/) · **built** · `localstack`/`fake-gcs`/`azurite` · `make up-cloud`, `uv sync --extra cloud`, `uv run pytest modules/09_cloud_portability/tests -m cloud`
 - **10 — dbt / orchestration / catalog** · [10_dbt_orchestration](../modules/10_dbt_orchestration/) · **built** · DuckDB · `make seed`, `uv sync --extra dbt`, `make dbt-run`, `make test-dbt` · dbt tests, lineage, data catalog
 
-Reading lists and sequencing: [`curriculum.md`](curriculum.md). Depth/breadth ceiling:
+At-a-glance ladder (beginner → cap): [`progression.md`](progression.md). Reading lists
+and sequencing: [`curriculum.md`](curriculum.md). Depth/breadth ceiling:
 [`scope-cap.md`](scope-cap.md) — the repo is capped at the interview-prep level (01 Python
 stays intentionally light; it's the least role-relevant module).

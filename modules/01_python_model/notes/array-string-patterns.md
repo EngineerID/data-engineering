@@ -1,11 +1,11 @@
 # Reusable Patterns: Arrays & Strings
 
-> **Where this sits in the module.** This is the **algorithmic-reasoning track** of
-> Module 01 — the external "Data Structures & Algorithms" strand of the curriculum
-> ([`docs/curriculum.md` — Module 2 — DSA](../../../docs/curriculum.md#module-2--data-structures-algorithms--problem-decomposition))
-> given a home here. It assumes you can read the Python in
-> [`python-foundations.md`](python-foundations.md). It is *parallel* to the
-> language-model / OOP track proven in [`../exercises.py`](../exercises.py): one
+> **Where this sits in the module.** These are the **Python data-manipulation patterns**
+> of Module 01 — the algorithmic reasoning the data-engineering role needs (decomposition,
+> invariants, complexity), taught at the Python language level and derived backward from
+> the work, not as a standalone "Data Structures & Algorithms" discipline. It assumes you
+> can read the Python in [`python-foundations.md`](python-foundations.md). It is *parallel*
+> to the language-model / OOP track proven in [`../exercises.py`](../exercises.py): one
 > builds problem-decomposition instinct, the other builds data-model fluency, and
 > both stand on the same foundations rung. See the module
 > [`README.md`](../README.md) for the full ladder.

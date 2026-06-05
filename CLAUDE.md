@@ -69,7 +69,7 @@ Copy `.env.example` → `.env`. Defaults match `infra/docker-compose.yml` (`def_
 ## Module status
 
 - **Built:** 02 SQL (views/CTE/index + windows/procs+triggers/idempotent-MERGE/RLS; **+ concept notes**: `notes/sql-foundations.md`, `notes/sql-patterns.md` — analytical patterns mapped to the runnable views), 03 BI (Power BI/DAX concepts), 04 Spark, 05 warehousing (SCD2/OLAP), 06 Kafka (roundtrip + streaming concepts), 08 lakehouse (medallion + DuckDB table-format lab: MERGE/enforce/evolve/time-travel), 09 cloud portability, 10 dbt/catalog, datagen, infra, CI, agent files (07)
-- **Light (by design):** 01 Python — minimal runnable infra per `docs/scope-cap.md`, but now carries the interview-prep **concept ramp**: `notes/python-foundations.md` (never-programmed on-ramp) + `notes/array-string-patterns.md` (DSA track), climbing to the data-model exercises
+- **Light (by design):** 01 Python — minimal runnable infra per `docs/scope-cap.md`, but now carries the interview-prep **concept ramp**: `notes/python-foundations.md` (never-programmed on-ramp) + `notes/array-string-patterns.md` (Python data-manipulation patterns), climbing to the data-model exercises
 
 ## UIs
 

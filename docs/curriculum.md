@@ -2,7 +2,7 @@
 
 *A competency-mapped course design with tiered reading lists (canonical textbooks → cited academic literature → industry/practitioner sources). It takes a learner from **zero** — never having heard of data engineering — to the point of performing the role at a **senior level**, by forcing the systems-internals layer beneath each tool to the surface and grading every unit on a runnable artifact.*
 
-Hands-on labs in this repository: [`docs/modules.md`](modules.md) · setup: [`docs/setup.md`](setup.md).
+Hands-on labs in this repository: [`docs/modules.md`](modules.md) · setup: [`docs/setup.md`](setup.md). For the at-a-glance ladder, see [`progression.md`](progression.md).
 
 ---
 
@@ -20,8 +20,7 @@ Hands-on labs in this repository: [`docs/modules.md`](modules.md) · setup: [`do
 
 This repo implements numbered folders under `modules/`. Curriculum sections below retain original numbering where noted.
 
-- **Repo 01** [`01_python_model`](../modules/01_python_model/) — Python language model (curriculum Module 1)
-- **DSA** — Data structures & algorithms (curriculum Module 2) — **separate repository**; study in parallel with repo 02
+- **Repo 01** [`01_python_model`](../modules/01_python_model/) — Python language model, including the algorithmic-reasoning patterns the role needs (curriculum Module 1; absorbs the problem-decomposition strand)
 - **Repo 02** [`02_sql_relational`](../modules/02_sql_relational/) — SQL (curriculum Module 3)
 - **Repo 03** [`03_bi_tools`](../modules/03_bi_tools/) — BI tools (split from curriculum Module 5)
 - **Repo 04** [`04_spark_internals`](../modules/04_spark_internals/) — Spark internals (curriculum Module 4)
@@ -48,11 +47,10 @@ Most people enter data engineering through a tool — a notebook, a DataFrame AP
 
 These are the concepts that most reliably distinguish someone who *uses* the tools from someone who *understands the system*. Each maps to a module below.
 
-- **Python language model** — mutability/immutability, the built-in data structures and their methods, the `array`/`list`/`ndarray` distinction, dunder methods (`__init__`, `__new__`, `__call__`, `__hash__`, `__eq__`), and OOP vs. procedural vs. scripting as language paradigms.
+- **Python language model** — mutability/immutability, the built-in data structures and their methods, the `array`/`list`/`ndarray` distinction, dunder methods (`__init__`, `__new__`, `__call__`, `__hash__`, `__eq__`), and OOP vs. procedural vs. scripting as language paradigms. This module also carries the **algorithmic reasoning** the role needs — loop invariants, indexing arithmetic, complexity reasoning, and decomposing a problem before coding — taught as Python data manipulation rather than as a standalone DSA discipline.
 - **Spark internals** — the `spark-submit` lifecycle (driver, executors, DAG, logical→physical plan, Catalyst, jobs/stages/tasks, cluster managers), diagnosing executor *and* driver OOM, partitioning, skew, shuffle, and tuning beyond toy data sizes. The common failure mode is a notebook-local mental model rather than a cluster-distributed one.
 - **Relational databases / SQL** — VIEWs, CTEs / the `WITH` clause, temporary vs. virtual tables, and cost-based query tuning with `EXPLAIN`.
 - **Dimensional modeling / BI** — dimensions vs. measures (Kimball / Tableau), facts vs. dimensions, star vs. snowflake, slowly changing dimensions, and the lakehouse framing.
-- **Algorithms / DSA** — loop invariants, indexing arithmetic, complexity reasoning, and decomposing a problem before writing code.
 - **AI-assisted development** — using agentic coding tools effectively, and the purpose of a `CLAUDE.md`-style project memory file in conserving context and tokens.
 
 ---
@@ -63,11 +61,18 @@ These are the concepts that most reliably distinguish someone who *uses* the too
 > [`modules/01_python_model/notes/python-foundations.md`](../modules/01_python_model/notes/python-foundations.md)
 > (never-programmed on-ramp) and
 > [`array-string-patterns.md`](../modules/01_python_model/notes/array-string-patterns.md)
-> (the DSA strand of *Module 2* below), climbing to the data-model exercises in
-> `exercises.py`.
+> (the Python data-manipulation patterns — the role's algorithmic reasoning at the
+> language level), climbing to the data-model exercises in `exercises.py`.
 
 ## Module 1 — The Python Language Model & Object Orientation
-**Level:** Tier A → B · **Covers:** mutability/immutability, built-in data structures, dunder methods, OOP vs. procedural vs. scripting, and building accurate self-calibration.
+**Level:** Tier A → B · **Covers:** mutability/immutability, built-in data structures, dunder methods, OOP vs. procedural vs. scripting, building accurate self-calibration, and the algorithmic reasoning the role needs (loop invariants, indexing arithmetic, complexity reasoning, problem decomposition) — taught as Python data manipulation, derived backward from the data-engineering work rather than as a standalone DSA syllabus.
+
+> **On data structures & algorithms:** standalone/abstract DSA is out of scope for this
+> repo — it serves no glossary term in [`scope-cap.md`](scope-cap.md). The reasoning that
+> *is* in scope (decomposition, invariants, complexity) is folded into this module and
+> exercised through the Python data-manipulation patterns in
+> [`array-string-patterns.md`](../modules/01_python_model/notes/array-string-patterns.md).
+> There is no separate Module 2.
 
 ### Tier 1 — Primary textbooks
 - **Luciano Ramalho, *Fluent Python*, 2nd ed. (O'Reilly, 2022).** The definitive treatment of the Python data model — mutable vs. immutable sequences, hashability, and the special ("dunder") methods (`__init__`, `__new__`, `__call__`, `__hash__`, `__eq__`). This single book closes nearly every Python fundamentals gap.
@@ -82,26 +87,6 @@ These are the concepts that most reliably distinguish someone who *uses* the too
 - **The Python Language Reference — "Data Model"** (docs.python.org). The *primary source* for special methods and the mutable/immutable distinction.
 - **CPython `array`, `collections`, `dataclasses` module docs.** Settles the "does Python have an array?" question (yes — the `array` module and, in practice, `list`/NumPy `ndarray`).
 - **Anthony Shaw, *CPython Internals* (Real Python, 2021).** How objects, reference counting, and immutability are implemented under the interpreter.
-
----
-
-## External — DSA (parallel with repo 02 SQL)
-
-## Module 2 — Data Structures, Algorithms & Problem Decomposition
-**Level:** Tier A · **Covers:** loop invariants, indexing arithmetic, complexity reasoning, and decomposing a problem before coding (e.g. deriving a relation like `2·row − 1` for a pattern before writing the loop).
-
-### Tier 1 — Primary textbooks
-- **Cormen, Leiserson, Rivest & Stein (CLRS), *Introduction to Algorithms*, 4th ed. (MIT Press, 2022).** The canonical reference; the loop-invariant methodology in Ch. 2 is the core technique for reasoning about correctness.
-- **Steven Skiena, *The Algorithm Design Manual*, 3rd ed. (Springer, 2020).** The most *practical* DSA text — strong on how to reason toward a solution under time pressure.
-- **Sedgewick & Wayne, *Algorithms*, 4th ed. (Addison-Wesley, 2011).** Excellent implementations and empirical complexity analysis.
-
-### Tier 2 — Academic / foundational
-- **George Pólya, *How to Solve It* (Princeton, 1945; still in print).** Problem-decomposition heuristics — the antidote to jumping to code before establishing the invariant.
-- **Knuth, *The Art of Computer Programming*, Vols. 1–3 (Addison-Wesley).** Reference-grade rigor for complexity and combinatorial reasoning.
-
-### Tier 3 — Industry / practice
-- **NeetCode / LeetCode patterns, and *Cracking the Coding Interview* (McDowell, 6th ed.).** Deliberate practice on the standard interview format.
-- **Python `timeit` / `cProfile` docs.** Make Big-O reasoning empirical, reinforcing calibration.
 
 ---
 
@@ -328,8 +313,8 @@ A pass over the modules plus typical senior job requirements surfaces these. Sta
 
 For learners targeting **PySpark / big-data engineering** roles, sequence to hit the keystone fastest while repairing foundations in parallel (repo module numbers):
 
-1. **Weeks 1–4 (parallel):** Repo **01** (Python) + repo **02** (SQL: views/CTEs) — quickest wins; build calibration early. Study **DSA** (external) in parallel with 02.
-2. **Weeks 3–10 (core):** Repo **04** (Spark internals) — largest investment; keep DSA practice alongside for plan-reading and complexity reasoning.
+1. **Weeks 1–4 (parallel):** Repo **01** (Python, including its data-manipulation patterns — decomposition, invariants, complexity) + repo **02** (SQL: views/CTEs) — quickest wins; build calibration early.
+2. **Weeks 3–10 (core):** Repo **04** (Spark internals) — largest investment; the module 01 data-manipulation patterns reinforce plan-reading and complexity reasoning alongside it.
 3. **Weeks 8–12:** Repo **03** (BI) + repo **05** (warehousing) + repo **06** (Kafka) + repo **09** (cloud) + repo **10** (dbt / orchestration / catalog).
 4. **Throughout:** Repo **07** (AI-assisted engineering) — adopt a `CLAUDE.md` on day one.
 5. **Optional / role-dependent:** Curriculum Module 7 (Java/OOP) for JVM-stack roles.
