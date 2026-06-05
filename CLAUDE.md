@@ -17,6 +17,7 @@ Hands-on repo closing the gap between **analytics delivery** (SQL, BI, warehousi
 | `make sql` | psql shell |
 | `make lint` / `make typecheck` / `make test` | Quality gates |
 | `make test-cloud` | Module 09 roundtrip (`uv sync --extra cloud` + `make up-cloud`) |
+| `make dbt-run` / `make test-dbt` | Module 10 dbt build + catalog (`uv sync --extra dbt`) |
 | `make check` | lint + typecheck + test |
 
 ## Stack
@@ -26,13 +27,16 @@ Hands-on repo closing the gap between **analytics delivery** (SQL, BI, warehousi
 - Local Docker only — no real cloud APIs (Module 09 uses **local emulators**: LocalStack/fake-gcs/Azurite)
 - **duckdb** for Module 05 warehousing exercises; **PySpark** on Bitnami Spark 3.5 cluster
 - Cloud backends (`fsspec`, `s3fs`, `gcsfs`, `adlfs`) are an optional extra: `uv sync --extra cloud`
+- **dbt** (`dbt-duckdb`) for Module 10 is an optional extra: `uv sync --extra dbt`
+- CI: `.github/workflows/ci.yml` runs `make check`; `.gitlab-ci.yml` mirrors it
 
 ## Layout
 
 - `src/def_/common/` — Spark session builder, Postgres DSN, paths (cluster-first)
 - `src/def_/datagen/` — Kimball-style retail star schema, `--scale-gb`
-- `modules/NN_*/` — learning units 01–09; exercises + tests in-module
+- `modules/NN_*/` — learning units 01–10; exercises + tests in-module
 - `src/def_/common/storage.py` — multi-cloud fsspec abstraction (Module 09)
+- `modules/10_dbt_orchestration/dbt_project/` — dbt models, tests, catalog (Module 10)
 - `docs/curriculum.md` — committed curriculum and reading lists
 - `references/` — **gitignored** optional local textbook extracts only; never commit
 - `data/` — **gitignored** generated Parquet and explain artifacts
@@ -54,7 +58,7 @@ Copy `.env.example` → `.env`. Defaults match `infra/docker-compose.yml` (`def_
 
 ## Module status
 
-- **Built:** 02 SQL, 04 Spark, 05 warehousing (SCD2/OLAP), 09 cloud portability, datagen, infra, agent files (07)
+- **Built:** 02 SQL, 04 Spark, 05 warehousing (SCD2/OLAP), 09 cloud portability, 10 dbt/catalog, datagen, infra, CI, agent files (07)
 - **Light:** 01 Python, 03 BI notes, 06 Kafka roundtrip, 08 medallion pipeline
 
 ## UIs

@@ -1,0 +1,42 @@
+version: 2
+
+# Schema tests are executable data validation: uniqueness, not-null, and
+# referential integrity (relationships) — i.e. reconciliation between the fact
+# table and its dimensions across a complex multi-table model.
+models:
+  - name: stg_dim_store
+    description: "Cleaned store dimension."
+    columns:
+      - name: store_key
+        description: "Surrogate key."
+        data_tests: [not_null, unique]
+      - name: region
+        data_tests: [not_null]
+
+  - name: stg_dim_product
+    description: "Cleaned product dimension."
+    columns:
+      - name: product_key
+        description: "Surrogate key."
+        data_tests: [not_null, unique]
+
+  - name: stg_fact_sales
+    description: "Cleaned sales fact."
+    columns:
+      - name: sales_key
+        description: "Fact grain key."
+        data_tests: [not_null, unique]
+      - name: store_key
+        description: "FK to stg_dim_store."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_dim_store')
+              field: store_key
+      - name: product_key
+        description: "FK to stg_dim_product."
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_dim_product')
+              field: product_key

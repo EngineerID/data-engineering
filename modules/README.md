@@ -1,4 +1,4 @@
-# Learning modules (01–09)
+# Learning modules (01–10)
 
 Prove-it units with exercises, tests, and run instructions. Full index: [`docs/modules.md`](../docs/modules.md).
 
@@ -11,5 +11,6 @@ Prove-it units with exercises, tests, and run instructions. Full index: [`docs/m
 - [07_ai_assisted_dev](07_ai_assisted_dev/) — AI-assisted engineering
 - [08_lakehouse_medallion](08_lakehouse_medallion/) — Lakehouse / medallion (light)
 - [09_cloud_portability](09_cloud_portability/) — Cloud object storage: AWS/GCP/Azure (**built**)
+- [10_dbt_orchestration](10_dbt_orchestration/) — dbt transformations, data tests, catalog & lineage (**built**)
 
 Curriculum: [`docs/curriculum.md`](../docs/curriculum.md). Setup: [`docs/setup.md`](../docs/setup.md).

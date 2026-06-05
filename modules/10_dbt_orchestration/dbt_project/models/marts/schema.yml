@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: mart_regional_revenue
+    description: "Gold: revenue and line count per region (one row per region)."
+    columns:
+      - name: region
+        description: "Store region (grain of this mart)."
+        data_tests: [not_null, unique]
+      - name: revenue
+        data_tests: [not_null]

@@ -1,0 +1,9 @@
+def_duckdb:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # DuckDB database file (gitignored under data/). Path resolves relative to
+      # the dbt invocation directory (repo root).
+      path: "{{ env_var('DBT_DUCKDB_PATH', 'data/dbt/def.duckdb') }}"
+      threads: 4

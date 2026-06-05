@@ -54,7 +54,15 @@ make test-cloud
 make down-cloud
 ```
 
-## Modules (01–09)
+### dbt / orchestration / catalog (10)
+
+```bash
+uv sync --extra dbt          # install dbt-duckdb
+make dbt-run                 # build models, run data tests, generate the catalog
+make test-dbt
+```
+
+## Modules (01–10)
 
 **DSA** is studied in a **separate repository**, in parallel with repo module 02 (SQL).
 
@@ -67,6 +75,7 @@ make down-cloud
 - **07** [AI-assisted](modules/07_ai_assisted_dev/) · agent files
 - **08** [Lakehouse](modules/08_lakehouse_medallion/) · light
 - **09** [Cloud portability (AWS/GCP/Azure)](modules/09_cloud_portability/) · **built**
+- **10** [dbt / orchestration / data catalog](modules/10_dbt_orchestration/) · **built**
 
 ## Scale knob
 

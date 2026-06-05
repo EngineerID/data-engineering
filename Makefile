@@ -1,5 +1,5 @@
 # Data Engineering Foundations — run from WSL at repo root.
-.PHONY: setup up down up-cloud down-cloud lint typecheck test test-cloud seed spark-submit sql check load-sql oom-lab
+.PHONY: setup up down up-cloud down-cloud lint typecheck test test-cloud test-dbt dbt-run seed spark-submit sql check load-sql oom-lab
 
 UV := uv
 COMPOSE := docker compose -f infra/docker-compose.yml
@@ -34,12 +34,18 @@ typecheck:
 	$(UV) run mypy
 
 test:
-	$(UV) run pytest -m "not spark and not kafka and not cloud" \
+	$(UV) run pytest -m "not spark and not kafka and not cloud and not dbt" \
 		--ignore=modules/04_spark_internals/tests \
 		--ignore=modules/06_streaming_kafka/tests
 
 test-cloud:
 	$(UV) run pytest modules/09_cloud_portability/tests -m cloud
+
+test-dbt:
+	$(UV) run pytest modules/10_dbt_orchestration/tests -m dbt
+
+dbt-run:
+	$(UV) run python modules/10_dbt_orchestration/run_pipeline.py
 
 test-all:
 	$(UV) run pytest

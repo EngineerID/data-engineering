@@ -1,0 +1,41 @@
+name: CI
+
+# Quality gate for the repo: lint, type-check, and the offline test suite.
+# Integration tests that need Docker services (Spark, Kafka, Postgres, cloud
+# emulators) or optional extras (dbt) are excluded here — they run locally via
+# `make test-cloud` / `make test-dbt` / the integration markers.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Set up Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-groups
+
+      - name: Seed sample data
+        run: make seed
+
+      - name: Lint
+        run: make lint
+
+      - name: Type-check
+        run: make typecheck
+
+      - name: Test (offline)
+        run: make test

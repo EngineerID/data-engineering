@@ -1,0 +1,39 @@
+# GitLab CI/CD pipeline — mirror of the GitHub Actions workflow.
+#
+# Included both because some shops run GitLab and as a readable reference for the
+# pipeline-YAML literacy this stack teaches (see modules/10_dbt_orchestration/concepts.md):
+#   - `stages` define ordered phases; jobs in the same stage run in parallel.
+#   - each job picks an `image`, runs `before_script` then `script`.
+#   - `rules`/`only` decide when a job runs (here: pushes and merge requests).
+#
+# It is valid GitLab YAML; if this repo is mirrored to GitLab it runs as-is.
+
+stages:
+  - setup
+  - quality
+
+variables:
+  UV_CACHE_DIR: "$CI_PROJECT_DIR/.uv-cache"
+
+default:
+  image: python:3.12-slim
+  before_script:
+    - pip install --quiet uv
+    - apt-get update && apt-get install -y --no-install-recommends make
+    - uv sync --all-groups
+    - make seed
+  cache:
+    key: uv-$CI_COMMIT_REF_SLUG
+    paths:
+      - .uv-cache/
+
+lint:
+  stage: quality
+  script:
+    - make lint
+    - make typecheck
+
+test:
+  stage: quality
+  script:
+    - make test

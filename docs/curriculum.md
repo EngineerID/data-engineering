@@ -16,7 +16,7 @@ Hands-on labs in this repository: [`docs/modules.md`](modules.md) · setup: [`do
 
 ---
 
-## Repo alignment (modules 01–09)
+## Repo alignment (modules 01–10)
 
 This repo implements numbered folders under `modules/`. Curriculum sections below retain original numbering where noted.
 
@@ -30,6 +30,7 @@ This repo implements numbered folders under `modules/`. Curriculum sections belo
 - **Repo 07** [`07_ai_assisted_dev`](../modules/07_ai_assisted_dev/) — AI-assisted engineering (curriculum Module 8)
 - **Repo 08** [`08_lakehouse_medallion`](../modules/08_lakehouse_medallion/) — Lakehouse, Delta, medallion (reframes curriculum Module 9 capstone; portable concepts, not a vendor course)
 - **Repo 09** [`09_cloud_portability`](../modules/09_cloud_portability/) — Cloud object storage & portability across AWS/GCP/Azure via local emulators (cross-cutting)
+- **Repo 10** [`10_dbt_orchestration`](../modules/10_dbt_orchestration/) — Orchestration, dbt transformations, data validation, and the data catalog
 - **Curriculum Module 7** (Java OOP / design patterns) — optional; for roles requiring a JVM/J2EE stack; not a repo folder
 
 Optional local textbook extracts: `references/` (gitignored). Do not commit long verbatim paste from publishers.
@@ -258,16 +259,54 @@ These are the concepts that most reliably distinguish someone who *uses* the too
 
 ---
 
+## Repo module 10 — Orchestration, dbt and the data catalog
+
+## Module 11 — Transformation, Orchestration, Data Quality & Cataloging  *(the ELT/operations layer)*
+**Level:** Tier B · **Covers:** the layer that turns raw data into trustworthy, documented tables on a schedule — **dbt** transformations, **executable data-quality tests** (validation and referential reconciliation), **data catalogs and metadata/lineage**, pipeline orchestration (Airflow/Dagster) and CI/CD (GitLab/GitHub Actions), and warehouse portability (BigQuery and peers). Runs locally on DuckDB.
+
+### Tier 1 — Primary references
+- **Joe Reis & Matt Housley, *Fundamentals of Data Engineering* (O'Reilly, 2022).** The transformation/serving stages of the lifecycle and the role of orchestration and metadata.
+- **dbt documentation — models, sources, tests, and `docs generate`.** The reference for ELT-in-SQL, the testing framework, and the manifest/catalog metadata that powers lineage.
+
+### Tier 2 — Foundational
+- **Halevy, Korn et al., "Goods: Organizing Google's Datasets," *SIGMOD* 2016.** Enterprise-scale dataset cataloging and metadata management.
+- **The data-contract / data-quality literature** (e.g. Great Expectations docs; "data as a product" writing). Why validation and reconciliation belong *in* the pipeline.
+
+### Tier 3 — Industry / official
+- **Airflow and Dagster documentation.** DAG scheduling, retries, and software-defined assets — how the ordered steps in `run_pipeline.py` run in production.
+- **GitLab CI/CD and GitHub Actions documentation.** Reading and writing pipeline YAML (`stages`, `jobs`, `needs`/`dependencies`); this repo ships both as working examples.
+- **BigQuery documentation — partitioning, clustering, and cost controls** (and the equivalent for Snowflake/Redshift/Databricks). The same dbt SQL runs on each by swapping the adapter; the differences are physical design and the bytes-scanned cost model.
+- **Data-catalog platforms** — dbt docs, DataHub, OpenMetadata, Unity Catalog. What ingests dbt's metadata to deliver discoverability and governance.
+
+---
+
 ## Identified concept gaps (coverage audit)
 
 A pass over the modules plus typical senior job requirements surfaces these. Status reflects this repository.
 
 - **Cloud / multi-cloud** — **covered** by repo module 09 (object storage portability across AWS/GCP/Azure on local emulators).
 - **Dimensional modeling depth** (SCD2, snowflake, OLAP cube) — **covered** by repo module 05's `dimensional_modeling.py` and `olap_analytics.py`.
-- **Orchestration & transformation frameworks** (Airflow / Dagster, **dbt**) — *still a gap.* dbt is named in the Module 5 reading list but has no lab; a scheduling/transformation module is the strongest next addition.
+- **Orchestration & transformation frameworks** (Airflow / Dagster, **dbt**) — **covered** by repo module 10 (`run_pipeline.py` + dbt project).
+- **Data quality / validation / reconciliation** — **covered** by repo module 10's dbt `not_null`/`unique`/`relationships` tests (and medallion `WHERE` filters in 08).
+- **Data catalog & metadata management** — **covered** by repo module 10 (`dbt docs generate` → manifest/catalog, lineage graph).
+- **CI/CD** — **covered**: `.github/workflows/ci.yml` runs `make check`; `.gitlab-ci.yml` mirrors it for pipeline-YAML literacy.
+- **Cloud warehouse design** (BigQuery partitioning/clustering, cost model) — **covered conceptually** in module 10 `concepts.md`; the same dbt SQL runs on BigQuery by swapping the adapter.
+- **Governance & compliance** (PIPEDA / HIPAA / GDPR / BCBS 239, de-identification) — **covered** in module 08 `governance_compliance.md`.
+- **Stakeholder engagement & analytical communication** — **covered** in module 03 `notes/stakeholder_engagement.md`.
 - **Table formats hands-on** (Delta / Iceberg ACID, time travel) — *partial.* Module 08 covers the concepts and a Parquet medallion; a real transactional table-format lab (e.g. delta-rs or pyiceberg, local) would close it.
-- **Data quality / contracts** (Great Expectations, schema enforcement) — *light*; touched only as medallion `WHERE` filters and lineage JSON.
-- **CI** — tests are runnable but there is no CI workflow wiring `make check`.
+
+### Where specific job-requirement themes are exercised
+
+| Requirement theme | Where in the stack |
+|---|---|
+| SQL for data validation & reconciliation | repo 02 (views/CTEs/EXPLAIN) + repo 10 (dbt tests, referential `relationships`) |
+| Large datasets (100s of GB structured, TBs of documents) | repo 04 (Spark at scale, `make seed-large`) + repo 10 `concepts.md` (same pattern at any size) |
+| Many object schemas & complex relationships | repo 02 (recursive CTE / joins) + repo 10 (sources, `ref()`, relationships tests, lineage) |
+| GitLab CI/CD pipeline-YAML literacy | `.gitlab-ci.yml` + `.github/workflows/ci.yml` + repo 10 `concepts.md` |
+| BigQuery (SQL, table design, partitioning, optimization) | repo 10 `concepts.md` (adapter swap; partition/cluster/cost) + repo 05 (dimensional design) |
+| Healthcare data compliance (PIPEDA, HIPAA) | repo 08 `governance_compliance.md` |
+| Data catalog tools & metadata management | repo 10 (dbt manifest/catalog, lineage) |
+| Stakeholder engagement & analytical skills | repo 03 `notes/stakeholder_engagement.md` |
 
 ---
 
@@ -277,9 +316,9 @@ For learners targeting **PySpark / big-data engineering** roles, sequence to hit
 
 1. **Weeks 1–4 (parallel):** Repo **01** (Python) + repo **02** (SQL: views/CTEs) — quickest wins; build calibration early. Study **DSA** (external) in parallel with 02.
 2. **Weeks 3–10 (core):** Repo **04** (Spark internals) — largest investment; keep DSA practice alongside for plan-reading and complexity reasoning.
-3. **Weeks 8–12:** Repo **03** (BI) + repo **05** (warehousing) + repo **06** (Kafka) + repo **09** (cloud).
+3. **Weeks 8–12:** Repo **03** (BI) + repo **05** (warehousing) + repo **06** (Kafka) + repo **09** (cloud) + repo **10** (dbt / orchestration / catalog).
 4. **Throughout:** Repo **07** (AI-assisted engineering) — adopt a `CLAUDE.md` on day one.
 5. **Optional / role-dependent:** Curriculum Module 7 (Java/OOP) for JVM-stack roles.
-6. **Finish:** Repo **08** (lakehouse / medallion capstone) — integrative, portfolio-grade.
+6. **Finish:** Repo **08** (lakehouse / medallion capstone, incl. governance & compliance) — integrative, portfolio-grade.
 
 **One closing note on assessment.** Because confidence should track competence, grade every module on a live artifact, not recall: read and explain a real physical plan, reproduce and fix an executor *and* a driver OOM, write a recursive CTE against a real schema, run an object-store roundtrip across three clouds, and ship a `CLAUDE.md` that demonstrably cuts a project's token use. Skill is earned against the machine, not asserted.

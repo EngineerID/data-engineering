@@ -15,6 +15,11 @@ REQUIRED_FILES: dict[str, list[str]] = {
         "### Tableau",
         "## Row-level security",
     ],
+    "stakeholder_engagement.md": [
+        "## Requirements gathering",
+        "## Translating between worlds",
+        "## Analytical skills that build trust",
+    ],
 }
 
 

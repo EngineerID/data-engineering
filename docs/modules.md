@@ -11,5 +11,6 @@ Each folder under [`modules/`](../modules/) is a prove-it unit. **DSA** (algorit
 - **07 — AI-assisted** · [07_ai_assisted_dev](../modules/07_ai_assisted_dev/) · agent files · repo root `CLAUDE.md`, `.cursor/rules/`
 - **08 — Lakehouse** · [08_lakehouse_medallion](../modules/08_lakehouse_medallion/) · light · local `data/medallion/` · `make seed`, pipeline script + pytest
 - **09 — Cloud portability** · [09_cloud_portability](../modules/09_cloud_portability/) · **built** · `localstack`/`fake-gcs`/`azurite` · `make up-cloud`, `uv sync --extra cloud`, `uv run pytest modules/09_cloud_portability/tests -m cloud`
+- **10 — dbt / orchestration / catalog** · [10_dbt_orchestration](../modules/10_dbt_orchestration/) · **built** · DuckDB · `make seed`, `uv sync --extra dbt`, `make dbt-run`, `make test-dbt` · dbt tests, lineage, data catalog
 
 Reading lists and sequencing: [`curriculum.md`](curriculum.md).

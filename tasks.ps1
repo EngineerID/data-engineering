@@ -11,8 +11,8 @@
 param(
     [Parameter(Position = 0)]
     [ValidateSet('setup', 'up', 'down', 'up-cloud', 'down-cloud', 'seed', 'seed-large',
-        'load-sql', 'lint', 'typecheck', 'test', 'test-cloud', 'check', 'spark-submit',
-        'oom-lab', 'help')]
+        'load-sql', 'lint', 'typecheck', 'test', 'test-cloud', 'test-dbt', 'dbt-run',
+        'check', 'spark-submit', 'oom-lab', 'help')]
     [string]$Task = 'help',
 
     [Parameter(Position = 1)]
@@ -53,11 +53,13 @@ switch ($Task) {
     }
     'typecheck'  { Invoke-Py -m mypy }
     'test' {
-        Invoke-Py -m pytest -m 'not spark and not kafka and not cloud' `
+        Invoke-Py -m pytest -m 'not spark and not kafka and not cloud and not dbt' `
             --ignore=modules/04_spark_internals/tests `
             --ignore=modules/06_streaming_kafka/tests
     }
     'test-cloud' { Invoke-Py -m pytest modules/09_cloud_portability/tests -m cloud }
+    'test-dbt'   { Invoke-Py -m pytest modules/10_dbt_orchestration/tests -m dbt }
+    'dbt-run'    { Invoke-Py modules\10_dbt_orchestration\run_pipeline.py }
     'check' {
         & $PSCommandPath lint
         & $PSCommandPath typecheck
@@ -74,6 +76,6 @@ switch ($Task) {
         & $PSCommandPath spark-submit 'modules/04_spark_internals/oom_exercise.py'
     }
     default {
-        Write-Host "Tasks: setup up down up-cloud down-cloud seed seed-large load-sql lint typecheck test test-cloud check spark-submit <job> oom-lab"
+        Write-Host "Tasks: setup up down up-cloud down-cloud seed seed-large load-sql lint typecheck test test-cloud test-dbt dbt-run check spark-submit <job> oom-lab"
     }
 }

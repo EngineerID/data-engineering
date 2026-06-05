@@ -6,6 +6,7 @@
 
 - `medallion_pipeline.py` — bronze / silver / gold Parquet layers + `data/medallion/lineage.json`
 - `delta_concepts.md` — ACID, time travel, schema evolution write-up starter
+- `governance_compliance.md` — PII, PIPEDA/HIPAA/GDPR/BCBS 239, de-identification, lineage
 - `tests/test_medallion_pipeline.py` — pipeline and lineage checks
 
 ## Infrastructure
@@ -25,6 +26,7 @@ uv run pytest modules/08_lakehouse_medallion/tests
 1. **Medallion at scale** — bronze/silver/gold under `data/medallion/` with lineage metadata
 2. **Delta-style table semantics** — expand `delta_concepts.md`
 3. **Performance report** — optional: tie tuning notes back to module 04 Spark work
+4. **Governance & compliance** — extend `governance_compliance.md`; tag a PII column and show the gold layer exposes only aggregated, non-identifying data
 
 ## Further reading
 

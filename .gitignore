@@ -185,3 +185,9 @@ references/
 data/
 .env
 .venv/
+
+# dbt (module 10) generated artifacts (target/ already covered above)
+dbt_packages/
+logs/
+modules/**/target/
+.user.yml

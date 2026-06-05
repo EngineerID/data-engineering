@@ -20,8 +20,12 @@ cloud = [
     "gcsfs>=2024.9.0",
     "adlfs>=2024.7.0",
 ]
+# Module 10 — dbt transformations + data catalog on DuckDB (no warehouse needed).
+dbt = [
+    "dbt-duckdb>=1.8",
+]
 dev = [
-    "mypy>=1.13.0",
+    "mypy>=1.13.0,<2",
     "pre-commit>=4.0.0",
     "pytest>=8.3.0",
     "pytest-cov>=6.0.0",
@@ -38,7 +42,7 @@ packages = ["src/def_"]
 
 [dependency-groups]
 dev = [
-    "mypy>=1.13.0",
+    "mypy>=1.13.0,<2",
     "pre-commit>=4.0.0",
     "pytest>=8.3.0",
     "pytest-cov>=6.0.0",
@@ -75,6 +79,7 @@ markers = [
     "spark: requires Spark cluster from docker compose",
     "kafka: requires Kafka broker from docker compose",
     "cloud: requires cloud emulators (localstack/azurite/fake-gcs) from docker compose",
+    "dbt: requires the dbt extra (dbt-duckdb) and seeded Parquet; runs on DuckDB",
 ]
 addopts = "-ra --tb=short"
 

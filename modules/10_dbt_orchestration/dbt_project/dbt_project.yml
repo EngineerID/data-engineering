@@ -1,0 +1,20 @@
+name: "def_dbt"
+version: "1.0.0"
+config-version: 2
+profile: "def_duckdb"
+
+model-paths: ["models"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages", "logs"]
+
+# parquet_dir is resolved relative to the directory dbt is invoked from (repo root).
+# run_pipeline.py and the tests pass an absolute path so it works from anywhere.
+vars:
+  parquet_dir: "data/parquet"
+
+models:
+  def_dbt:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
