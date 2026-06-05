@@ -56,6 +56,7 @@ a standing instruction.
 2. **Prove it** — Every exercise has pytest acceptance criteria; integration tests skip when Docker is down.
 3. **Typed `src/`** — Fully annotated; `make typecheck` must pass before done.
 4. **Copyright** — Paraphrase concepts in READMEs; cite as *Book — Chapter N*; never paste long verbatim text from `references/`.
+5. **Markdown style — no tables** — Write every `.md` in this repo (READMEs, notes, docs) as **clean prose and bullet lists, never pipe tables**. This is a standing instruction for all future AI and human contributors: before you write or edit a Markdown document, render any tabular thought as a list (one bullet per item, with `·`- or `—`-separated fields inside the bullet) or as short prose. Rationale: pipe tables are brittle to diff, wrap badly in terminals and narrow viewports, and are harder for both humans and tools to read and patch line-by-line. Lists stay readable and machine-parseable at any width. If existing tables are found, convert them on touch.
 
 ## Spark session
 
@@ -67,8 +68,8 @@ Copy `.env.example` → `.env`. Defaults match `infra/docker-compose.yml` (`def_
 
 ## Module status
 
-- **Built:** 02 SQL (views/CTE/index + windows/procs+triggers/idempotent-MERGE/RLS), 03 BI (Power BI/DAX concepts), 04 Spark, 05 warehousing (SCD2/OLAP), 06 Kafka (roundtrip + streaming concepts), 08 lakehouse (medallion + DuckDB table-format lab: MERGE/enforce/evolve/time-travel), 09 cloud portability, 10 dbt/catalog, datagen, infra, CI, agent files (07)
-- **Light (by design):** 01 Python — least relevant to the target DBA role; kept minimal per `docs/scope-cap.md`
+- **Built:** 02 SQL (views/CTE/index + windows/procs+triggers/idempotent-MERGE/RLS; **+ concept notes**: `notes/sql-foundations.md`, `notes/sql-patterns.md` — analytical patterns mapped to the runnable views), 03 BI (Power BI/DAX concepts), 04 Spark, 05 warehousing (SCD2/OLAP), 06 Kafka (roundtrip + streaming concepts), 08 lakehouse (medallion + DuckDB table-format lab: MERGE/enforce/evolve/time-travel), 09 cloud portability, 10 dbt/catalog, datagen, infra, CI, agent files (07)
+- **Light (by design):** 01 Python — minimal runnable infra per `docs/scope-cap.md`, but now carries the interview-prep **concept ramp**: `notes/python-foundations.md` (never-programmed on-ramp) + `notes/array-string-patterns.md` (DSA track), climbing to the data-model exercises
 
 ## UIs
 

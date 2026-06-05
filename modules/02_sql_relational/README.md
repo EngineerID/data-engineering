@@ -4,20 +4,42 @@ The DBA core. This is the heaviest-weighted module for the target role (SQL Serv
 MySQL / stored procedures / triggers / indexing / OLTP-OLAP / star schema). Postgres
 stands in; **dialect differences are documented, not reproduced** (see `docs/scope-cap.md`).
 
+## The ladder (query-comfortable → DBA ceiling)
+
+Three rungs, concept-first then proof. The notes carry the *why* (and the MySQL
+interview idioms); the `.sql` files are the runnable, tested *how* in Postgres.
+Cross-links keep them one click apart, so neither repeats the other.
+
+- **Rung 0 — Mental models** · [`notes/sql-foundations.md`](notes/sql-foundations.md) — logical processing order, `GROUP BY` vs. window, `OVER(...)`, CTEs: *why* the patterns are shaped as they are.
+- **Rung 1 — Patterns** · [`notes/sql-patterns.md`](notes/sql-patterns.md) — six analytical patterns plus the judgment calls (window vs. `GROUP BY`, which CTE earns its layer). Each maps to a runnable view.
+- **Rung 2 — Proof + DBA depth** · [`sql/`](sql/) artifacts + tests — the patterns executing on seed data, **plus** the DBA-only material no LeetCode set covers: index tuning/SARGability, procedures, triggers, idempotent MERGE, RLS.
+
+Entry floor: `SELECT`/`WHERE`/`JOIN` are assumed (the prep package's
+`sql-cheat-sheet.md §1–§4` is that rung). Rung 2 is where this module goes
+*past* the analytical-pattern docs into the role's heaviest-weighted topics.
+
 ## What's in this folder
 
-| File | Concept (drill term) |
-|---|---|
-| `sql/01_views.sql` | Views over a star join |
-| `sql/02_recursive_cte.sql` | Recursive CTE for hierarchies |
-| `sql/03_index_demo.sql` | Index tuning (Seq Scan → Index Scan) |
-| `sql/04_window_patterns.sql` | Top-N per group, MoM + running total, dedup-keep-latest |
-| `sql/05_procedures_triggers.sql` | Stored procedure + AFTER UPDATE audit trigger |
-| `sql/06_merge_upsert.sql` | Idempotent upsert / MERGE (no dupes on re-run) |
-| `sql/07_rls_isolation.sql` | Row-level security (tenant isolation) |
-| `notes/normalization_oltp_olap.md` | Normalization→3NF, OLTP vs OLAP, isolation levels |
-| `load_to_postgres.py` | Load Parquet into Postgres and apply scripts in order |
-| `tests/test_sql_slice.py` | Prove-it tests (`-m postgres`) |
+Runnable SQL artifacts (each maps to a drill term):
+
+- `sql/01_views.sql` — views over a star join.
+- `sql/02_recursive_cte.sql` — recursive CTE for hierarchies.
+- `sql/03_index_demo.sql` — index tuning (Seq Scan → Index Scan).
+- `sql/04_window_patterns.sql` — top-N per group, MoM + running total, dedup-keep-latest.
+- `sql/05_procedures_triggers.sql` — stored procedure + AFTER UPDATE audit trigger.
+- `sql/06_merge_upsert.sql` — idempotent upsert / MERGE (no dupes on re-run).
+- `sql/07_rls_isolation.sql` — row-level security (tenant isolation).
+
+Concept notes:
+
+- `notes/sql-foundations.md` — mental models: processing order, `GROUP BY` vs window, `OVER()`, CTEs.
+- `notes/sql-patterns.md` — six analytical patterns + window-vs-`GROUP BY` judgment, mapped to the runnable views.
+- `notes/normalization_oltp_olap.md` — normalization→3NF, OLTP vs OLAP, isolation levels.
+
+Plumbing:
+
+- `load_to_postgres.py` — load Parquet into Postgres and apply scripts in order.
+- `tests/test_sql_slice.py` — prove-it tests (`-m postgres`).
 
 ## Infrastructure
 

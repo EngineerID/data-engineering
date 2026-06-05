@@ -58,14 +58,12 @@ uv run pytest modules/05_warehousing/tests
 
 ## Concepts → code
 
-| Kimball / OLAP concept | Where |
-|---|---|
-| Dimension vs measure | every `GROUP BY <dim>` over `SUM(sales_amount)` |
-| Grain / additivity | `fanout_trap()` |
-| Slowly changing dimension (Type 2) | `build_scd2()` |
-| Normalization tradeoff | `star_` vs `snowflake_category_revenue()` |
-| Data cube (Gray 1997) | `cube_region_category()` |
-| Pre-aggregation / materialized view | `materialized_region_revenue()` |
+- **Dimension vs measure** → every `GROUP BY <dim>` over `SUM(sales_amount)`.
+- **Grain / additivity** → `fanout_trap()`.
+- **Slowly changing dimension (Type 2)** → `build_scd2()`.
+- **Normalization tradeoff** → `star_` vs `snowflake_category_revenue()`.
+- **Data cube (Gray 1997)** → `cube_region_category()`.
+- **Pre-aggregation / materialized view** → `materialized_region_revenue()`.
 
 ## Further reading
 

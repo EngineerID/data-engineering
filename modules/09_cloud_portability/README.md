@@ -14,11 +14,11 @@ A data engineer writes against *one* storage interface and swaps clouds by
 or `azure`; the same `object_store_roundtrip.py` job writes and reads a gold
 Parquet table to whichever you pick.
 
-| Cloud | Service | Emulator | Endpoint | fsspec backend |
-|---|---|---|---|---|
-| `aws` | S3 | LocalStack | `http://localhost:4566` | `s3fs` |
-| `gcp` | Cloud Storage | fake-gcs-server | `http://localhost:4443` | `gcsfs` |
-| `azure` | Blob / ADLS Gen2 | Azurite | `http://localhost:10000` | `adlfs` |
+One bullet per cloud — service · emulator · endpoint · fsspec backend:
+
+- **`aws`** — S3 · LocalStack · `http://localhost:4566` · `s3fs`.
+- **`gcp`** — Cloud Storage · fake-gcs-server · `http://localhost:4443` · `gcsfs`.
+- **`azure`** — Blob / ADLS Gen2 · Azurite · `http://localhost:10000` · `adlfs`.
 
 ## What's in this folder
 

@@ -67,14 +67,12 @@ DBT_DUCKDB_PATH=data/dbt/def.duckdb \
 
 ## Concepts → code
 
-| Theme | Where |
-|---|---|
-| ELT transformation (staging → marts) | `models/staging`, `models/marts` |
-| Data validation & reconciliation | `schema.yml` `not_null`/`unique`/`relationships` tests |
-| Data catalog & metadata management | `dbt docs generate` → `target/manifest.json`, `catalog.json` |
-| Data lineage | `manifest.json` `parent_map` (summarized by `run_pipeline.py`) |
-| Orchestration | `run_pipeline.py` (maps to Airflow/Dagster/CI) |
-| Cloud warehouse portability (BigQuery) | `concepts.md` — same dbt SQL, swap the adapter |
+- **ELT transformation (staging → marts)** → `models/staging`, `models/marts`.
+- **Data validation & reconciliation** → `schema.yml` `not_null`/`unique`/`relationships` tests.
+- **Data catalog & metadata management** → `dbt docs generate` → `target/manifest.json`, `catalog.json`.
+- **Data lineage** → `manifest.json` `parent_map` (summarized by `run_pipeline.py`).
+- **Orchestration** → `run_pipeline.py` (maps to Airflow/Dagster/CI).
+- **Cloud warehouse portability (BigQuery)** → `concepts.md` — same dbt SQL, swap the adapter.
 
 ## Further reading
 

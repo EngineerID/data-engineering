@@ -59,6 +59,13 @@ These are the concepts that most reliably distinguish someone who *uses* the too
 
 ## Repo module 01 — Python language model
 
+> **In-repo materials:** the beginner→ceiling ramp lives in
+> [`modules/01_python_model/notes/python-foundations.md`](../modules/01_python_model/notes/python-foundations.md)
+> (never-programmed on-ramp) and
+> [`array-string-patterns.md`](../modules/01_python_model/notes/array-string-patterns.md)
+> (the DSA strand of *Module 2* below), climbing to the data-model exercises in
+> `exercises.py`.
+
 ## Module 1 — The Python Language Model & Object Orientation
 **Level:** Tier A → B · **Covers:** mutability/immutability, built-in data structures, dunder methods, OOP vs. procedural vs. scripting, and building accurate self-calibration.
 
@@ -99,6 +106,13 @@ These are the concepts that most reliably distinguish someone who *uses* the too
 ---
 
 ## Repo module 02 — SQL
+
+> **In-repo materials:** mental models in
+> [`modules/02_sql_relational/notes/sql-foundations.md`](../modules/02_sql_relational/notes/sql-foundations.md)
+> and the six analytical patterns in
+> [`sql-patterns.md`](../modules/02_sql_relational/notes/sql-patterns.md), each
+> mapped to the runnable, tested views in `sql/04_window_patterns.sql` and the
+> wider DBA artifacts (index/procedures/triggers/MERGE/RLS).
 
 ## Module 3 — Relational Databases, SQL & Query Optimization
 **Level:** Tier A → C · **Covers:** views, CTEs/`WITH`, temporary vs. virtual tables, and cost-based query tuning.
