@@ -1,6 +1,6 @@
 # Module 01 — Python Language Model
 
-**Status:** light
+**Status:** light (by design — least relevant to the target DBA role; see `docs/scope-cap.md`)
 
 ## What's in this folder
 

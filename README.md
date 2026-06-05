@@ -66,14 +66,14 @@ make test-dbt
 
 **DSA** is studied in a **separate repository**, in parallel with repo module 02 (SQL).
 
-- **01** [Python](modules/01_python_model/) · light
+- **01** [Python](modules/01_python_model/) · light (by design — least role-relevant)
 - **02** [SQL](modules/02_sql_relational/) · **built**
-- **03** [BI](modules/03_bi_tools/) · light
+- **03** [BI](modules/03_bi_tools/) · **built** (concepts)
 - **04** [PySpark](modules/04_spark_internals/) · **built**
 - **05** [Warehousing](modules/05_warehousing/) · **built**
-- **06** [Kafka](modules/06_streaming_kafka/) · light
+- **06** [Kafka](modules/06_streaming_kafka/) · **built** (roundtrip + concepts)
 - **07** [AI-assisted](modules/07_ai_assisted_dev/) · agent files
-- **08** [Lakehouse](modules/08_lakehouse_medallion/) · light
+- **08** [Lakehouse](modules/08_lakehouse_medallion/) · **built**
 - **09** [Cloud portability (AWS/GCP/Azure)](modules/09_cloud_portability/) · **built**
 - **10** [dbt / orchestration / data catalog](modules/10_dbt_orchestration/) · **built**
 

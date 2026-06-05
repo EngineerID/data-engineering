@@ -1,6 +1,6 @@
 # Module 03 — BI Tools (Power BI, Tableau & Notes)
 
-**Status:** light
+**Status:** built (concepts — notes-first by design; Power BI is the role's BI tool)
 
 ## What's in this folder
 

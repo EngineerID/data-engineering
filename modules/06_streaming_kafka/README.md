@@ -1,6 +1,6 @@
 # Module 06 — Event Streaming & Kafka
 
-**Status:** light
+**Status:** built (Kafka roundtrip + streaming concepts; docs-first as streaming is lighter for this role)
 
 ## What's in this folder
 

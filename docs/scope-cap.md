@@ -16,10 +16,11 @@ C:\Users\idamn\OneDrive\Documents\01 Admin\02 Canada\Ontario\
     two-question-answers.md       — model answers (the actual ceiling)
 ```
 
-These files are **not** committed (personal, gitignored location). They are the source
-of truth for *what to build and how deep*. If a concept is not a term in the glossary,
-it is out of scope. If a question in the drill probes something the repo can't yet
-demonstrate or explain, that's an in-scope gap worth closing.
+These files live **outside the repo** (a personal OneDrive path, not tracked here), so a
+fresh agent session won't see them unless the user provides them. They are the source of
+truth for *what to build and how deep*. If a concept is not a term in the glossary, it is
+out of scope. If a question in the drill probes something the repo can't yet demonstrate
+or explain, that's an in-scope gap worth closing.
 
 ## The role this targets
 
@@ -65,8 +66,12 @@ two-question drill for that term actually demand it?"**
 
 ## Where the cap is reflected in the repo
 
-- Each `modules/NN_*/README.md` "Prove-it" + "Interview bar" sections map exercises to
-  the drill questions they answer.
-- [`curriculum.md`](curriculum.md) holds the reading lists and the (now closed/known)
-  concept gaps.
-- This file is the standing instruction; [`../CLAUDE.md`](../CLAUDE.md) links here.
+- Every `modules/NN_*/README.md` has a **"Prove-it"** section (acceptance criteria). The
+  four role-heaviest modules — **02 SQL, 03 BI, 06 Kafka, 08 Lakehouse** — also carry an
+  **"Interview bar"** section mapping exercises to the drill's Q1/Q2. (01/04/05/07/09/10
+  predate this pass and don't yet have one; add it there only if you touch them.)
+- [`curriculum.md`](curriculum.md) holds the reading lists and the concept-gap audit —
+  all gaps are now marked covered (table formats are covered *within scope*; a real
+  delta-rs/pyiceberg lab is explicitly out of scope there too).
+- This file is the standing instruction; [`../CLAUDE.md`](../CLAUDE.md) links here, and
+  its "Module status" block is the quick map of what exists.

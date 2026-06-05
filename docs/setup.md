@@ -60,7 +60,7 @@ make down     # stop all services
 - **Spark master UI** `8080` — module 04 Spark
 - **Spark app UI** `4040` — module 04 (while a job runs)
 - **Spark master RPC** `7077` — module 04 Spark
-- **Kafka** `9092` — module 06 streaming (light)
+- **Kafka** `9092` — module 06 streaming
 
 Cloud emulators (module 09) start under a separate profile and are **not** part of `make up`:
 
@@ -80,7 +80,7 @@ make seed         # ~0.01 GB
 make seed-large   # ~1 GB (shuffle / spill practice)
 ```
 
-## Light module tests (01, 03, 05, 06, 08)
+## Local / no-cluster module tests (01, 03, 05, 06, 08)
 
 ```bash
 uv run pytest modules/01_python_model/tests modules/03_bi_tools/tests

@@ -293,7 +293,7 @@ A pass over the modules plus typical senior job requirements surfaces these. Sta
 - **Cloud warehouse design** (BigQuery partitioning/clustering, cost model) — **covered conceptually** in module 10 `concepts.md`; the same dbt SQL runs on BigQuery by swapping the adapter.
 - **Governance & compliance** (PIPEDA / HIPAA / GDPR / BCBS 239, de-identification) — **covered** in module 08 `governance_compliance.md`.
 - **Stakeholder engagement & analytical communication** — **covered** in module 03 `notes/stakeholder_engagement.md`.
-- **Table formats hands-on** (Delta / Iceberg ACID, time travel) — *partial.* Module 08 covers the concepts and a Parquet medallion; a real transactional table-format lab (e.g. delta-rs or pyiceberg, local) would close it.
+- **Table formats hands-on** (Delta / Iceberg ACID, time travel) — **covered within scope** by repo module 08 `table_format_lab.py`: runnable DuckDB demonstrations of idempotent MERGE, schema enforcement, schema evolution, and time-travel recovery, plus full drill answers in `delta_concepts.md`. A real delta-rs / pyiceberg lab is **deliberately out of scope** (cluster-grade depth) per [`scope-cap.md`](scope-cap.md) — do not add it without changing the cap.
 
 ### Where specific job-requirement themes are exercised
 
