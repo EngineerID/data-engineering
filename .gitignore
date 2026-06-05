@@ -191,3 +191,6 @@ dbt_packages/
 logs/
 modules/**/target/
 .user.yml
+
+# Generated repo-dump artifacts (not source)
+repomix-output.*

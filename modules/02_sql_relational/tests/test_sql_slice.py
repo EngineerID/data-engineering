@@ -96,3 +96,97 @@ def test_index_speedup(db: psycopg.Connection) -> None:
 
     # Indexed path should not be slower than sequential (allow noise on tiny data)
     assert with_ms <= without_ms * 1.5 or "Index Scan" in with_plan
+
+
+def test_top_n_per_region(db: psycopg.Connection) -> None:
+    """Window pattern: at most 3 products per region, ranked 1..3 by revenue."""
+    with db.cursor() as cur:
+        cur.execute(
+            "SELECT region, COUNT(*), MAX(rn) FROM retail.v_top_products_per_region "
+            "GROUP BY region"
+        )
+        rows = cur.fetchall()
+    assert rows, "expected at least one region"
+    for _region, n, max_rn in rows:
+        assert n <= 3
+        assert max_rn <= 3
+
+
+def test_monthly_running_total_is_cumulative(db: psycopg.Connection) -> None:
+    """LAG + windowed SUM: running_total never decreases (revenue is positive)."""
+    with db.cursor() as cur:
+        cur.execute(
+            "SELECT running_total FROM retail.v_monthly_revenue ORDER BY year, month"
+        )
+        totals = [float(r[0]) for r in cur.fetchall()]
+    assert len(totals) >= 1
+    assert all(b >= a for a, b in zip(totals, totals[1:], strict=False))
+
+
+def test_dedup_keeps_latest(db: psycopg.Connection) -> None:
+    """ROW_NUMBER dedup keeps the most recent row per email."""
+    with db.cursor() as cur:
+        cur.execute(
+            "SELECT full_name FROM retail.v_customer_emails_deduped "
+            "WHERE email = 'a@example.com'"
+        )
+        name = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM retail.v_customer_emails_deduped")
+        n = cur.fetchone()[0]
+    assert name == "Ann New"
+    assert n == 2  # two distinct emails after dedup
+
+
+def test_trigger_wrote_audit_log(db: psycopg.Connection) -> None:
+    """The AFTER UPDATE trigger populated audit_log when the script bumped targets."""
+    with db.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM retail.audit_log WHERE table_name = 'kpi_targets'")
+        assert cur.fetchone()[0] > 0
+
+
+def test_stored_procedure_is_idempotent(db: psycopg.Connection) -> None:
+    """Re-running the refresh procedure rebuilds the same row set (no duplicates)."""
+    with db.cursor() as cur:
+        cur.execute("CALL retail.refresh_regional_kpi()")
+        cur.execute("SELECT COUNT(*) FROM retail.gold_regional_kpi")
+        first = cur.fetchone()[0]
+        cur.execute("CALL retail.refresh_regional_kpi()")
+        cur.execute("SELECT COUNT(*) FROM retail.gold_regional_kpi")
+        second = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(DISTINCT region) FROM retail.dim_store")
+        regions = cur.fetchone()[0]
+    db.commit()
+    assert first == second == regions
+
+
+def test_upsert_is_idempotent(db: psycopg.Connection) -> None:
+    """ON CONFLICT upsert: a second run changes no row count (idempotent MERGE)."""
+    with db.cursor() as cur:
+        cur.execute("CALL retail.upsert_gold_kpi()")
+        cur.execute("SELECT COUNT(*) FROM retail.gold_kpi")
+        first = cur.fetchone()[0]
+        cur.execute("CALL retail.upsert_gold_kpi()")
+        cur.execute("SELECT COUNT(*) FROM retail.gold_kpi")
+        second = cur.fetchone()[0]
+    db.commit()
+    assert first == second
+    assert first > 0
+
+
+def test_row_level_security_isolates_tenant(db: psycopg.Connection) -> None:
+    """Under a non-superuser role, RLS shows only the session's tenant rows."""
+    with db.cursor() as cur:
+        cur.execute(
+            "SELECT 1 FROM pg_policies "
+            "WHERE schemaname='retail' AND tablename='tenant_metrics' "
+            "AND policyname='tenant_isolation'"
+        )
+        assert cur.fetchone() is not None, "RLS policy not registered"
+
+        cur.execute("SET ROLE retail_app")
+        cur.execute("SET app.tenant_id = 'hk'")
+        cur.execute("SELECT DISTINCT tenant_id FROM retail.tenant_metrics")
+        visible = sorted(r[0] for r in cur.fetchall())
+        cur.execute("RESET ROLE")
+    db.rollback()
+    assert visible == ["hk"], f"RLS leak: saw {visible}"

@@ -41,6 +41,15 @@ Hands-on repo closing the gap between **analytics delivery** (SQL, BI, warehousi
 - `references/` — **gitignored** optional local textbook extracts only; never commit
 - `data/` — **gitignored** generated Parquet and explain artifacts
 
+## Scope cap (read before adding anything)
+
+This repo is **capped at the depth/breadth of the Technical Interview Preparation
+Package** (DBA-leaning role: SQL Server/MySQL, stored procs, triggers, indexing,
+OLTP/OLAP, warehouse, star schema, RBAC, Power BI + lakehouse/governance concepts).
+Before adding scope or depth, read [`docs/scope-cap.md`](docs/scope-cap.md) — it names
+the anchor documents and the "which glossary term does this serve?" test. Not a freeze;
+a standing instruction.
+
 ## Principles
 
 1. **Real cluster over notebooks** — Spark jobs via `spark-submit` against `spark://localhost:7077`; inspect UI :8080 (cluster) and :4040 (app).
@@ -58,8 +67,8 @@ Copy `.env.example` → `.env`. Defaults match `infra/docker-compose.yml` (`def_
 
 ## Module status
 
-- **Built:** 02 SQL, 04 Spark, 05 warehousing (SCD2/OLAP), 09 cloud portability, 10 dbt/catalog, datagen, infra, CI, agent files (07)
-- **Light:** 01 Python, 03 BI notes, 06 Kafka roundtrip, 08 medallion pipeline
+- **Built:** 02 SQL (views/CTE/index + windows/procs+triggers/idempotent-MERGE/RLS), 03 BI (Power BI/DAX concepts), 04 Spark, 05 warehousing (SCD2/OLAP), 06 Kafka (roundtrip + streaming concepts), 08 lakehouse (medallion + DuckDB table-format lab: MERGE/enforce/evolve/time-travel), 09 cloud portability, 10 dbt/catalog, datagen, infra, CI, agent files (07)
+- **Light (by design):** 01 Python — least relevant to the target DBA role; kept minimal per `docs/scope-cap.md`
 
 ## UIs
 

@@ -54,6 +54,22 @@ classification, access control, de-identification, retention, and lineage.
 - **Catalog & stewardship** — descriptions/ownership/classification in metadata
   so the catalog (module 10) is the single source of truth for governance.
 
+## Right to erasure & pseudonymization (drill answers)
+
+- **GDPR erasure on an append-only / immutable table** — "append-only" describes the
+  *log*, not your inability to delete. Three mechanically real options: (1) a `DELETE`
+  that rewrites the affected files and removes the old ones at `VACUUM` (the tombstoned
+  files leave the time-travel window after retention); (2) partition the data by subject
+  so erasure rewrites few files; (3) **crypto-shredding** — store PII encrypted/tokenized
+  and delete the key, rendering the rows unreadable without rewriting them. Note the
+  tension with time travel: until VACUUM, an old version may still hold the data.
+- **Pseudonymization is still personal data** — you've protected the *direct* identifier
+  but the row is still linkable to a person *with the key*, so GDPR still applies (unlike
+  true anonymization, which is irreversible and out of scope). The **re-identification
+  key lives separately** under tighter access control; if it leaks, every pseudonymized
+  row is re-identifiable — that's the whole attack, so the key gets the strictest RBAC
+  and its own audit trail.
+
 ## Prove-it extension
 
 Add a `classification` tag to PII columns in the module 10 `schema.yml`, then show

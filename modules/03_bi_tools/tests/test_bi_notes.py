@@ -20,6 +20,11 @@ REQUIRED_FILES: dict[str, list[str]] = {
         "## Translating between worlds",
         "## Analytical skills that build trust",
     ],
+    "power_bi_dax.md": [
+        "## Storage mode: Import vs DirectQuery vs Composite",
+        "## Measure vs calculated column (why the difference matters for performance)",
+        "## Row-level security (RLS) in Power BI",
+    ],
 }
 
 
